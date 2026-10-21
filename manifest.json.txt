@@ -1,0 +1,18 @@
+{
+  "name": "KathaVoice - Human Book Explainer",
+  "short_name": "KathaVoice",
+  "description": "Books & PDFs explained like a real human storyteller in Kannada, Hindi, English, Telugu, Tamil & Marathi.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#f59e0b",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='115' fill='%230f172a'/><circle cx='256' cy='256' r='190' fill='%23f59e0b' opacity='0.15'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-size='270'>🎧</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

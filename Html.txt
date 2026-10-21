@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="StoryVoice" />
+  <title>StoryVoice - Human Book & PDF Explainer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Mammoth.js for DOCX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <!-- Razorpay Checkout SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-amber-500 selection:text-black pb-16">
+
+  <!-- Top Early Bird Promo Banner -->
+  <div id="promoBanner" class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-black text-xs font-bold text-center py-2 px-3">
+    🔥 FIRST 1,000 INSTALLERS OFFER: Get Unlimited Human Explanations for just ₹49/mo! (<span id="spotsRemaining">Loading...</span> spots left)
+  </div>
+
+  <div class="max-w-2xl mx-auto px-4 pt-6">
+    <!-- Header & Trial Counter -->
+    <header class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-extrabold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+          StoryVoice
+        </h1>
+        <p class="text-xs text-slate-400">Books & PDFs explained like a real human</p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Trial / Pro Status Badge -->
+        <button id="subStatusBadge" class="text-xs font-bold bg-amber-500/15 border border-amber-500/40 text-amber-300 px-3 py-1.5 rounded-full">
+          🎁 Checking trials...
+        </button>
+      </div>
+    </header>
+
+    <!-- Step 1: Upload PDF or DOC -->
+    <div class="bg-slate-900 border-2 border-dashed border-slate-800 rounded-2xl p-5 text-center mb-5 hover:border-amber-500/60 transition">
+      <input type="file" id="fileInput" accept=".pdf,.docx,.txt" class="hidden" />
+      <label for="fileInput" class="cursor-pointer block">
+        <div class="text-3xl mb-1">📚</div>
+        <p class="font-semibold text-sm text-slate-200">Tap to open PDF Book, Word Doc, or Text</p>
+        <p id="fileNameDisplay" class="text-xs text-slate-400 mt-1">Supports stories, classic books, notes & documents</p>
+      </label>
+    </div>
+
+    <!-- PDF Page Navigation -->
+    <div id="pageControls" class="hidden flex items-center justify-between bg-slate-900 px-4 py-2.5 rounded-xl mb-4 border border-slate-800">
+      <button id="prevPage" class="text-xs bg-slate-800 px-3 py-1.5 rounded-lg hover:bg-slate-700">◀ Prev Page</button>
+      <span id="pageIndicator" class="text-xs font-bold text-amber-400">Page 1 of 1</span>
+      <button id="nextPage" class="text-xs bg-slate-800 px-3 py-1.5 rounded-lg hover:bg-slate-700">Next Page ▶</button>
+    </div>
+
+    <!-- Extracted Text Preview -->
+    <div class="mb-4">
+      <label class="block text-xs text-slate-400 mb-1.5 font-medium">Book / Document Passage:</label>
+      <textarea id="rawText" rows="4" placeholder="Upload a PDF above, or paste any story, philosophical passage, or chapter here..."
+        class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-slate-300 focus:outline-none focus:border-amber-500"></textarea>
+    </div>
+
+    <!-- Multi-Language & Voice Selection -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+      <div>
+        <label class="block text-xs text-slate-400 mb-1 font-medium">🌐 Explain in Language:</label>
+        <select id="langSelect" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500">
+          <option value="English" data-lang="en-IN">English (Warm Storytelling)</option>
+          <option value="Kannada" data-lang="kn-IN">ಕನ್ನಡ (Kannada - Natural Spoken Style)</option>
+          <option value="Hindi" data-lang="hi-IN">हिन्दी (Hindi - Kahani Style)</option>
+          <option value="Telugu" data-lang="te-IN">తెలుగు (Telugu - Conversational)</option>
+          <option value="Tamil" data-lang="ta-IN">தமிழ் (Tamil - Conversational)</option>
+          <option value="Marathi" data-lang="mr-IN">मराठी (Marathi - Conversational)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs text-slate-400 mb-1 font-medium">🎙️ Human Tone Style:</label>
+        <select id="styleSelect" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500">
+          <option value="storyteller">🔥 Passionate Master Storyteller</option>
+          <option value="elder_wisdom">🌿 Wise Elder / Deep Life Meaning</option>
+          <option value="best_friend">☕ Excited Best Friend Explaining</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Main Action Button -->
+    <button id="explainBtn" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold py-3.5 rounded-xl shadow-lg shadow-amber-500/10 transition mb-6">
+      ✨ Explain Like a Human
+    </button>
+
+    <!-- In-App Human Explanation & Voice Player -->
+    <div id="outputCard" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs uppercase tracking-wider text-amber-400 font-bold">🎧 Live Human Explanation</span>
+        <button id="viralShareBtn" class="text-xs bg-amber-500/20 border border-amber-500/50 text-amber-300 hover:bg-amber-500/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1">
+          📲 Share With Friends to Listen
+        </button>
+      </div>
+
+      <div id="humanScript" class="text-slate-200 text-base leading-relaxed whitespace-pre-line mb-5 select-none"></div>
+
+      <!-- In-App Voice Controls -->
+      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <button id="playBtn" class="bg-amber-500 hover:bg-amber-400 text-black font-bold px-4 py-2 rounded-lg text-sm">
+            ▶ Listen Now
+          </button>
+          <button id="replayBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-sm font-medium">
+            ↺ Hear It Again
+          </button>
+          <button id="stopBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-400 px-3 py-2 rounded-lg text-sm">
+            ⏹
+          </button>
+        </div>
+        <select id="voiceSelect" class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-2.5 py-2 text-slate-300 max-w-[190px]"></select>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAYWALL MODAL -->
+  <div id="paywallModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-amber-500/40 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative">
+      <button id="closePaywallBtn" class="absolute top-4 right-4 text-slate-500 hover:text-slate-300 text-lg">✕</button>
+      
+      <div class="inline-block bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold px-3 py-1 rounded-full mb-3">
+        🚀 FIRST 1,000 INSTALLERS SPECIAL
+      </div>
+
+      <h2 class="text-2xl font-extrabold text-white mb-2">You've Used Your 2 Free Trials!</h2>
+      <p class="text-sm text-slate-400 mb-5">
+        Unlock unlimited human-like explanations for all your PDF books, stories, and documents in any language.
+      </p>
+
+      <!-- Dynamic Pricing Card -->
+      <div class="bg-slate-950 border border-amber-500/50 rounded-2xl p-4 mb-5">
+        <div class="flex items-center justify-center gap-2 mb-1">
+          <span id="crossedPrice" class="text-slate-500 line-through text-lg font-semibold">₹149/mo</span>
+          <span id="activePriceDisplay" class="text-3xl font-extrabold text-amber-400">₹49</span>
+          <span class="text-xs text-slate-400">/ month</span>
+        </div>
+        <p id="installerSlotNote" class="text-xs text-emerald-400 font-medium">
+          ✅ Early-Bird Price Locked (<span id="modalSpotsLeft">...</span> spots left of 1,000)
+        </p>
+      </div>
+
+      <ul class="text-left text-xs text-slate-300 space-y-2 mb-6 px-2">
+        <li>✨ <b>Unlimited PDF & Book Pages</b> explained like a real human</li>
+        <li>🗣️ <b>All Languages Included</b> (Kannada, English, Hindi, Telugu, Tamil)</li>
+        <li>↺ <b>Unlimited Replays</b> & saved history inside the app</li>
+        <li>🔒 Cancel anytime with 1 tap via UPI / Razorpay</li>
+      </ul>
+
+      <button id="subscribeNowBtn" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-extrabold py-3.5 rounded-xl text-sm shadow-lg shadow-amber-500/20">
+        ⚡ Unlock Unlimited Now
+      </button>
+    </div>
+  </div>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    // ==========================================
+    // BACKEND CONFIGURATION
+    // ==========================================
+    const BACKEND_URL = 'https://storyvoice-backend.vikasgudarad09.workers.dev';
+    const RAZORPAY_KEY_ID = 'rzp_test_YourKeyHere'; // Replace with live Razorpay Key when ready
+    const APP_INVITE_URL = window.location.href;
+
+    // Generate unique device ID for secure trial tracking
+    let deviceId = localStorage.getItem('sv_device_id');
+    if (!deviceId) {
+      deviceId = 'dev_' + Math.random().toString(36.substring(2)) + Date.now().toString(36);
+      localStorage.setItem('sv_device_id', deviceId);
+    }
+
+    let pdfDoc = null;
+    let currentPage = 1;
+    let currentExplanation = '';
+    let serverState = { spotsLeft: 1000, activePrice: 49, trialsRemaining: 2, isPro: false };
+
+    // Fetch initial status from secure Cloudflare Worker backend
+    async function syncAppStatus() {
+      try {
+        const res = await fetch(`${BACKEND_URL}/status?deviceId=${deviceId}`);
+        const data = await res.json();
+        serverState = data;
+        updateUI();
+      } catch (err) {
+        console.error('Offline mode or backend error');
+      }
+    }
+
+    function updateUI() {
+      document.getElementById('spotsRemaining').textContent = serverState.spotsLeft;
+      document.getElementById('modalSpotsLeft').textContent = serverState.spotsLeft;
+      document.getElementById('activePriceDisplay').textContent = `₹${serverState.activePrice}`;
+      document.getElementById('subscribeNowBtn').textContent = `⚡ Unlock Unlimited for ₹${serverState.activePrice} / month`;
+
+      const badge = document.getElementById('subStatusBadge');
+      if (serverState.isPro) {
+        badge.textContent = '👑 PRO MEMBER';
+        badge.className = 'text-xs font-bold bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-3 py-1.5 rounded-full';
+      } else {
+        badge.textContent = `🎁 ${serverState.trialsRemaining} Free Trial${serverState.trialsRemaining === 1 ? '' : 's'} Left`;
+      }
+    }
+
+    syncAppStatus();
+
+    document.getElementById('subStatusBadge').onclick = () => {
+      if (!serverState.isPro) document.getElementById('paywallModal').classList.remove('hidden');
+    };
+    document.getElementById('closePaywallBtn').onclick = () => {
+      document.getElementById('paywallModal').classList.add('hidden');
+    };
+
+    // ==========================================
+    // RAZORPAY SUBSCRIPTION CHECKOUT
+    // ==========================================
+    document.getElementById('subscribeNowBtn').onclick = async () => {
+      const options = {
+        key: RAZORPAY_KEY_ID,
+        amount: serverState.activePrice * 100, // in paise
+        currency: 'INR',
+        name: 'StoryVoice App',
+        description: `Monthly Unlimited Plan (${serverState.activePrice === 49 ? 'First 1k Installers' : 'Standard'})`,
+        handler: async function (response) {
+          // Notify backend to increment 1,000 counter & mark user Pro
+          try {
+            const res = await fetch(`${BACKEND_URL}/unlock-pro`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ deviceId, paymentId: response.razorpay_payment_id || 'test_pay' })
+            });
+            const data = await res.json();
+            serverState.isPro = true;
+            serverState.spotsLeft = Math.max(0, serverState.spotsLeft - 1);
+            updateUI();
+            document.getElementById('paywallModal').classList.add('hidden');
+            alert('🎉 Welcome to StoryVoice PRO! Enjoy unlimited human storytelling.');
+          } catch (e) {
+            alert('Payment received, syncing status...');
+            syncAppStatus();
+          }
+        },
+        theme: { color: '#f59e0b' }
+      };
+
+      if (RAZORPAY_KEY_ID === 'rzp_test_YourKeyHere') {
+        if (confirm(`[TEST MODE] Simulate ₹${serverState.activePrice}/month Razorpay UPI Subscription?`)) {
+          const res = await fetch(`${BACKEND_URL}/unlock-pro`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ deviceId, paymentId: 'simulated_payment' })
+          });
+          serverState.isPro = true;
+          updateUI();
+          document.getElementById('paywallModal').classList.add('hidden');
+          alert('🎉 Simulated Pro Unlocked Successfully!');
+        }
+        return;
+      }
+
+      const rzp = new Razorpay(options);
+      rzp.open();
+    };
+
+    // ==========================================
+    // PDF & DOCX PARSER
+    // ==========================================
+    const rawText = document.getElementById('rawText');
+    document.getElementById('fileInput').onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('fileNameDisplay').textContent = `Loaded: ${file.name}`;
+
+      if (file.name.endsWith('.pdf')) {
+        const arrayBuffer = await file.arrayBuffer();
+        pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        currentPage = 1;
+        document.getElementById('pageControls').classList.remove('hidden');
+        await renderPdfPage(currentPage);
+      } else if (file.name.endsWith('.docx')) {
+        document.getElementById('pageControls').classList.add('hidden');
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        rawText.value = result.value.slice(0, 3000);
+      } else {
+        document.getElementById('pageControls').classList.add('hidden');
+        rawText.value = await file.text();
+      }
+    };
+
+    async function renderPdfPage(num) {
+      const page = await pdfDoc.getPage(num);
+      const content = await page.getTextContent();
+      rawText.value = content.items.map(item => item.str).join(' ');
+      document.getElementById('pageIndicator').textContent = `Page ${num} of ${pdfDoc.numPages}`;
+    }
+
+    document.getElementById('prevPage').onclick = () => {
+      if (pdfDoc && currentPage > 1) renderPdfPage(--currentPage);
+    };
+    document.getElementById('nextPage').onclick = () => {
+      if (pdfDoc && currentPage < pdfDoc.numPages) renderPdfPage(++currentPage);
+    };
+
+    // ==========================================
+    // MULTI-LANGUAGE HUMAN STORYTELLER ENGINE
+    // ==========================================
+    document.getElementById('explainBtn').onclick = async () => {
+      if (!serverState.isPro && serverState.trialsRemaining <= 0) {
+        document.getElementById('paywallModal').classList.remove('hidden');
+        return;
+      }
+
+      const text = rawText.value.trim();
+      if (!text) return alert('Please upload a PDF/book or paste a passage first!');
+
+      const targetLang = document.getElementById('langSelect').value;
+      const toneStyle = document.getElementById('styleSelect').value;
+
+      const btn = document.getElementById('explainBtn');
+      btn.textContent = `🎧 Preparing Human Explanation in ${targetLang}...`;
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/explain`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, targetLang, toneStyle, deviceId })
+        });
+        const data = await res.json();
+
+        if (data.error === 'TRIAL_LIMIT_REACHED') {
+          serverState.trialsRemaining = 0;
+          updateUI();
+          document.getElementById('paywallModal').classList.remove('hidden');
+          return;
+        }
+
+        currentExplanation = data.explanation;
+        serverState.trialsRemaining = data.trialsRemaining;
+        updateUI();
+
+        document.getElementById('humanScript').textContent = currentExplanation;
+        document.getElementById('outputCard').classList.remove('hidden');
+        autoSelectLanguageVoice();
+        speakText(currentExplanation);
+      } catch (err) {
+        alert('Could not connect to backend server. Please check your internet.');
+      } finally {
+        btn.textContent = '✨ Explain Like a Human';
+        btn.disabled = false;
+      }
+    };
+
+    // ==========================================
+    // VOICE SYNTHESIS
+    // ==========================================
+    const voiceSelect = document.getElementById('voiceSelect');
+
+    function loadVoices() {
+      const voices = window.speechSynthesis.getVoices();
+      voiceSelect.innerHTML = '';
+      voices.forEach((v, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `${v.name} (${v.lang})`;
+        voiceSelect.appendChild(opt);
+      });
+      autoSelectLanguageVoice();
+    }
+
+    function autoSelectLanguageVoice() {
+      const voices = window.speechSynthesis.getVoices();
+      const langSelect = document.getElementById('langSelect');
+      const targetCode = langSelect.options[langSelect.selectedIndex].dataset.lang;
+      const shortCode = targetCode.split('-')[0];
+      const matchIndex = voices.findIndex(v => v.lang.toLowerCase().includes(shortCode));
+      if (matchIndex !== -1) voiceSelect.value = matchIndex;
+    }
+
+    document.getElementById('langSelect').onchange = autoSelectLanguageVoice;
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+
+    function speakText(text) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      const voices = window.speechSynthesis.getVoices();
+      if (voices[voiceSelect.value]) utter.voice = voices[voiceSelect.value];
+      utter.rate = 0.94;
+      utter.pitch = 1.0;
+      window.speechSynthesis.speak(utter);
+    }
+
+    document.getElementById('playBtn').onclick = () => speakText(currentExplanation);
+    document.getElementById('replayBtn').onclick = () => speakText(currentExplanation);
+    document.getElementById('stopBtn').onclick = () => window.speechSynthesis.cancel();
+
+    // ==========================================
+    // VIRAL APP-INSTALL SHARE
+    // ==========================================
+    document.getElementById('viralShareBtn').onclick = async () => {
+      const previewSnippet = currentExplanation.slice(0, 140) + '...';
+      const shareMessage = `🎧 I just listened to this book explained like a real human on StoryVoice:\n\n"${previewSnippet}"\n\n👉 Install the app to hear the full voice explanation (First 2 explanations are FREE, plus ₹49/mo for the first 1,000 installers!): ${APP_INVITE_URL}`;
+
+      if (navigator.share) {
+        await navigator.share({
+          title: 'StoryVoice - Hear Books Explained Like a Human',
+          text: shareMessage,
+          url: APP_INVITE_URL
+        });
+      } else {
+        await navigator.clipboard.writeText(shareMessage);
+        alert('Viral App Invite copied! Paste it on WhatsApp to invite friends.');
+      }
+    };
+  </script>
+</body>
+</html>

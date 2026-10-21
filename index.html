@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="KathaVoice" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#020617" />
+  <meta name="description" content="Hear sacred shlokas read aloud, then explained in your mother tongue — like a wise elder sitting beside you." />
+
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icon.svg" />
+  <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+
+  <title>KathaVoice — Sacred Shloka Reader & Human Explainer</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Serif+Devanagari:wght@400;600;700&display=swap');
+
+    body { font-family: 'Inter', sans-serif; }
+    .shloka-text { font-family: 'Noto Serif Devanagari', 'serif'; }
+
+    /* ─── Ambient Glow ─── */
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.18; transform: scale(1); }
+      50% { opacity: 0.32; transform: scale(1.05); }
+    }
+    .ambient-glow {
+      position: fixed; top: -150px; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 500px; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse, rgba(245,158,11,0.22) 0%, rgba(234,88,12,0.1) 40%, transparent 70%);
+      animation: pulseGlow 7s infinite ease-in-out;
+    }
+    .ambient-glow-blue {
+      position: fixed; bottom: -100px; right: -100px;
+      width: 400px; height: 400px; pointer-events: none; z-index: 0;
+      background: radial-gradient(ellipse, rgba(99,102,241,0.1) 0%, transparent 70%);
+      animation: pulseGlow 10s infinite ease-in-out reverse;
+    }
+
+    /* ─── Sound Equalizer Bars ─── */
+    @keyframes eq1 { 0%,100%{height:4px} 50%{height:20px} }
+    @keyframes eq2 { 0%,100%{height:7px} 50%{height:14px} }
+    @keyframes eq3 { 0%,100%{height:3px} 50%{height:22px} }
+    @keyframes eq4 { 0%,100%{height:8px} 50%{height:12px} }
+    @keyframes eq5 { 0%,100%{height:5px} 50%{height:18px} }
+    .eq-bar {
+      display: inline-block; width: 3px; border-radius: 2px; margin: 0 1.5px;
+      background: linear-gradient(to top, #f59e0b, #ea580c);
+    }
+    .speaking .eq-bar:nth-child(1) { animation: eq1 0.7s infinite ease-in-out 0.0s; }
+    .speaking .eq-bar:nth-child(2) { animation: eq2 0.5s infinite ease-in-out 0.1s; }
+    .speaking .eq-bar:nth-child(3) { animation: eq3 0.9s infinite ease-in-out 0.2s; }
+    .speaking .eq-bar:nth-child(4) { animation: eq2 0.6s infinite ease-in-out 0.15s; }
+    .speaking .eq-bar:nth-child(5) { animation: eq1 0.8s infinite ease-in-out 0.25s; }
+
+    /* ─── Shloka-Phase Glow ─── */
+    .reading-shloka-phase { animation: shlokaPulse 2s infinite ease-in-out; }
+    @keyframes shlokaPulse {
+      0%,100%{ box-shadow: 0 0 0 rgba(245,158,11,0); border-color: rgba(245,158,11,0.5); }
+      50%{ box-shadow: 0 0 32px rgba(245,158,11,0.25); border-color: rgba(245,158,11,0.9); }
+    }
+
+    /* ─── Karaoke Sentence Highlighter ─── */
+    .k-sent {
+      transition: all 0.2s ease; cursor: pointer;
+      border-radius: 5px; padding: 1px 3px; display: inline;
+    }
+    .k-sent:hover { background: rgba(245,158,11,0.12); }
+    .k-sent.active {
+      background: rgba(245,158,11,0.25);
+      color: #fef3c7;
+      border-bottom: 2px solid #f59e0b;
+    }
+
+    /* ─── Shloka block special styling ─── */
+    .shloka-block {
+      background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(234,88,12,0.05));
+      border-left: 3px solid #f59e0b;
+      border-radius: 0 12px 12px 0;
+      font-size: 1.1rem;
+      line-height: 2;
+      letter-spacing: 0.02em;
+    }
+    .phase-reading { color: #fbbf24; }
+    .phase-explaining { color: #34d399; }
+
+    /* ─── Progress Bar ─── */
+    .progress-track {
+      background: rgba(51,65,85,0.6);
+      border-radius: 99px; height: 3px; width: 100%;
+    }
+    .progress-bar {
+      background: linear-gradient(90deg, #f59e0b, #ea580c);
+      border-radius: 99px; height: 3px;
+      transition: width 0.4s linear;
+    }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #020617; }
+    ::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-amber-500 selection:text-black pb-28 relative overflow-x-hidden">
+
+  <div class="ambient-glow"></div>
+  <div class="ambient-glow-blue"></div>
+
+  <!-- Promo Banner -->
+  <aside id="promoBanner" class="relative z-10 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-black py-2 px-4 text-center shadow-lg">
+    <div class="max-w-2xl mx-auto flex items-center justify-center gap-2 text-xs font-black">
+      <span>🔥 FIRST 1,000 INSTALLERS SPECIAL — Unlimited Human Explanations for ₹49/mo!</span>
+      <span class="bg-black/80 text-amber-300 px-2 py-0.5 rounded-full text-[11px] font-extrabold shrink-0"><span id="spotsRemaining">999</span> left</span>
+    </div>
+  </aside>
+
+  <main class="max-w-2xl mx-auto px-4 pt-5 relative z-10">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between mb-6 pb-4 border-b border-slate-800/60">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-amber-700 flex items-center justify-center text-2xl shadow-xl shadow-amber-500/30 ring-2 ring-amber-400/20">🎧</div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-black bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-300 bg-clip-text text-transparent tracking-tight">KathaVoice</h1>
+            <span class="text-[10px] font-extrabold uppercase tracking-widest bg-violet-500/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-md">Shloka + Katha</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Listen to the shloka. Then hear the story it tells.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="headerInstallBtn" class="flex items-center gap-1.5 text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-black px-3 py-1.5 rounded-full shadow-md shadow-amber-500/20 transition cursor-pointer shrink-0">
+          <span id="headerInstallIcon">📱</span> <span id="headerInstallText">Install App</span>
+        </button>
+        <button id="subStatusBadge" class="flex items-center gap-1.5 text-xs font-bold bg-amber-500/15 border border-amber-500/40 text-amber-300 px-3 py-1.5 rounded-full hover:bg-amber-500/25 transition cursor-pointer shrink-0">
+          🎁 <span id="trialBadgeText">Loading...</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Step 1: Upload -->
+    <section class="mb-5">
+      <div class="flex items-center justify-between mb-2">
+        <label class="text-xs font-black uppercase tracking-wider text-amber-400">📚 Step 1 — Upload or Choose</label>
+        <span class="text-[11px] text-slate-500">PDF · Word · Text</span>
+      </div>
+
+      <div id="dropZone" class="bg-slate-900/80 border-2 border-dashed border-slate-700 rounded-2xl p-5 text-center group cursor-pointer hover:border-amber-500/70 hover:bg-amber-500/5 transition-all duration-200">
+        <input type="file" id="fileInput" accept=".pdf,.docx,.txt" class="hidden" />
+        <label for="fileInput" class="cursor-pointer block">
+          <div class="w-12 h-12 mx-auto mb-2 rounded-xl bg-slate-800/60 flex items-center justify-center text-3xl group-hover:scale-110 group-hover:bg-amber-500/15 transition-all duration-200">📖</div>
+          <p class="font-bold text-sm text-slate-200 group-hover:text-amber-300 transition-colors">Tap to upload PDF Book, Word Doc, or Notes</p>
+          <p id="fileNameDisplay" class="text-[11px] text-slate-500 mt-1">Gita · Upanishads · Panchatantra · Any book in any Indian script</p>
+        </label>
+      </div>
+
+      <!-- Quick Sample Buttons -->
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <span class="text-[11px] text-slate-500 font-semibold">Instant Samples:</span>
+        <button class="sample-btn text-[11px] bg-slate-900 hover:bg-amber-500/10 border border-slate-700 hover:border-amber-500/40 text-slate-300 hover:text-amber-300 px-2.5 py-1 rounded-lg transition font-medium" data-sample="gita">📜 Bhagavad Gita</button>
+        <button class="sample-btn text-[11px] bg-slate-900 hover:bg-amber-500/10 border border-slate-700 hover:border-amber-500/40 text-slate-300 hover:text-amber-300 px-2.5 py-1 rounded-lg transition font-medium" data-sample="upanishad">🔱 Isha Upanishad</button>
+        <button class="sample-btn text-[11px] bg-slate-900 hover:bg-amber-500/10 border border-slate-700 hover:border-amber-500/40 text-slate-300 hover:text-amber-300 px-2.5 py-1 rounded-lg transition font-medium" data-sample="panchatantra">🦁 Panchatantra</button>
+        <button class="sample-btn text-[11px] bg-slate-900 hover:bg-amber-500/10 border border-slate-700 hover:border-amber-500/40 text-slate-300 hover:text-amber-300 px-2.5 py-1 rounded-lg transition font-medium" data-sample="psychology">💡 Psychology of Money</button>
+      </div>
+    </section>
+
+    <!-- Step 2: Page Selector -->
+    <div id="pageSelectorWizard" class="hidden bg-slate-900/90 border border-amber-500/35 rounded-2xl p-4 mb-5 shadow-xl shadow-amber-500/5">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-black uppercase tracking-wider text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded border border-amber-500/30">📖 Step 2 — Choose Page</span>
+          <span id="docTypeBadge" class="text-[10px] font-mono text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">PDF</span>
+        </div>
+        <span id="totalPagesBadge" class="text-[11px] font-bold text-amber-300 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">1 Page</span>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800 mb-3">
+        <button id="startFromPage1Btn" class="text-xs bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-bold px-3 py-1.5 rounded-lg transition cursor-pointer">⏮ Page 1</button>
+        <div class="flex items-center gap-1.5">
+          <button id="prevPage" class="text-xs bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded-lg font-bold text-slate-200 transition cursor-pointer">◀</button>
+          <div class="flex items-center bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
+            <span class="text-[10px] text-slate-400 mr-1">Pg</span>
+            <input id="pageJumpInput" type="number" min="1" value="1" class="w-10 bg-transparent text-center text-sm text-amber-400 font-black focus:outline-none" />
+            <span id="totalPagesText" class="text-[10px] text-slate-400 ml-1">/ 1</span>
+          </div>
+          <button id="nextPage" class="text-xs bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded-lg font-bold text-slate-200 transition cursor-pointer">▶</button>
+        </div>
+        <button id="togglePreviewBtn" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg transition cursor-pointer">👁️ Preview</button>
+      </div>
+
+      <div id="pdfPreviewContainer" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-center">
+        <div class="flex items-center justify-between mb-2 px-1">
+          <p id="scanBadge" class="text-xs text-emerald-400 font-medium">✅ Visual page ready for AI Vision reading!</p>
+          <span id="previewPageIndicator" class="text-[11px] text-slate-400">Page 1</span>
+        </div>
+        <div class="overflow-hidden rounded-lg border border-slate-800 max-h-64 flex items-center justify-center bg-slate-900/50">
+          <canvas id="pdfCanvas" class="max-h-64 mx-auto object-contain"></canvas>
+          <div id="textDocPreview" class="hidden p-4 text-left text-xs text-slate-300 font-serif leading-relaxed max-h-64 overflow-y-auto whitespace-pre-wrap w-full"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manual Text Input -->
+    <div id="manualTextContainer" class="mb-4">
+      <div class="flex items-center justify-between mb-1.5">
+        <label for="manualTextInput" class="text-xs text-slate-400 font-semibold">✍️ Or paste shloka, passage, or chapter directly:</label>
+        <button id="clearTextBtn" class="text-[11px] text-slate-500 hover:text-amber-400 transition cursor-pointer">Clear</button>
+      </div>
+      <textarea id="manualTextInput" rows="3"
+        placeholder="कर्मण्येवाधिकारस्ते मा फलेषु कदाचन। Or paste any passage in any language..."
+        class="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500/70 focus:ring-1 focus:ring-amber-500/30 transition-all shloka-text placeholder:font-sans placeholder:text-slate-600"></textarea>
+    </div>
+
+    <!-- Step 3: Settings -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+      <div>
+        <label for="flowModeSelect" class="block text-xs text-slate-400 mb-1.5 font-semibold">🎧 Voice Mode:</label>
+        <select id="flowModeSelect" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2.5 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-500 transition cursor-pointer">
+          <option value="explain_only" selected>✨ Katha Only (Fluent & Complete)</option>
+          <option value="shloka_first">📜 Shloka First + Katha</option>
+        </select>
+      </div>
+      <div>
+        <label for="langSelect" class="block text-xs text-slate-400 mb-1.5 font-semibold">🌐 Explain in Language:</label>
+        <select id="langSelect" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 transition cursor-pointer">
+          <option value="English" data-lang="en-IN" data-short="en">English — Storytelling</option>
+          <option value="Kannada" data-lang="kn-IN" data-short="kn">ಕನ್ನಡ — ಸಹಜ ಕಥೆ</option>
+          <option value="Hindi" data-lang="hi-IN" data-short="hi">हिन्दी — दिल की बात</option>
+          <option value="Telugu" data-lang="te-IN" data-short="te">తెలుగు — కథనం</option>
+          <option value="Tamil" data-lang="ta-IN" data-short="ta">தமிழ் — கதை</option>
+          <option value="Marathi" data-lang="mr-IN" data-short="mr">मराठी — भावकथन</option>
+          <option value="Bengali" data-lang="bn-IN" data-short="bn">বাংলা — গল্পকথন</option>
+          <option value="Gujarati" data-lang="gu-IN" data-short="gu">ગુજરાતી — વાર્તા</option>
+          <option value="Malayalam" data-lang="ml-IN" data-short="ml">മലയാളം — കഥ</option>
+        </select>
+      </div>
+      <div>
+        <label for="styleSelect" class="block text-xs text-slate-400 mb-1.5 font-semibold">🎙️ Voice & Tone Style:</label>
+        <select id="styleSelect" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 transition cursor-pointer">
+          <option value="elder_wisdom" selected>🌿 Wise Elder (Grandparent)</option>
+          <option value="storyteller">🔥 Katha Vachak (Passionate)</option>
+          <option value="best_friend">☕ Chai with Friend (Warm)</option>
+          <option value="philosopher">🧘 Zen Philosopher (Calm)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Action Button -->
+    <button id="explainBtn" class="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-black font-black py-4 rounded-xl shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 transition-all mb-5 text-sm tracking-wide flex items-center justify-center gap-2 cursor-pointer active:scale-[0.985]">
+      <span id="explainBtnIcon">✨</span>
+      <span id="explainBtnText">Explain Every Line of This Page</span>
+    </button>
+
+    <!-- Output Card (Hidden until AI responds) -->
+    <section id="outputCard" class="hidden mb-6">
+
+      <!-- Phase 1: Shloka Reading Block -->
+      <div id="shlokaCard" class="hidden bg-slate-900/90 border border-amber-500/50 rounded-2xl p-5 mb-3 shadow-xl shadow-amber-500/10 transition-all">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <div id="shlokaEQ" class="flex items-end h-5 gap-0.5">
+              <span class="eq-bar" style="height:4px"></span>
+              <span class="eq-bar" style="height:7px"></span>
+              <span class="eq-bar" style="height:4px"></span>
+              <span class="eq-bar" style="height:7px"></span>
+              <span class="eq-bar" style="height:4px"></span>
+            </div>
+            <span class="text-xs font-black uppercase tracking-widest text-amber-400">📜 Original Shloka / Passage</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="skipShlokaBtn" class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 transition cursor-pointer">⏩ Skip to Meaning</button>
+            <span id="shlokaStatusBadge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">Now Reading</span>
+          </div>
+        </div>
+        <div id="shlokaText" class="shloka-text text-slate-100 text-[1.05rem] leading-loose bg-slate-950/70 p-4 rounded-xl border border-amber-500/20 shloka-block select-none"></div>
+      </div>
+
+      <!-- Phase 2: Human Explanation Card -->
+      <div id="explanationCard" class="hidden bg-slate-900/90 border border-emerald-500/30 rounded-2xl p-5 shadow-xl shadow-emerald-500/5 transition-all">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-3 border-b border-slate-800">
+          <div class="flex items-center gap-2.5">
+            <div id="explanationEQ" class="flex items-end h-5 gap-0.5">
+              <span class="eq-bar" style="height:4px;background:linear-gradient(to top, #34d399, #059669)"></span>
+              <span class="eq-bar" style="height:7px;background:linear-gradient(to top, #34d399, #059669)"></span>
+              <span class="eq-bar" style="height:4px;background:linear-gradient(to top, #34d399, #059669)"></span>
+              <span class="eq-bar" style="height:7px;background:linear-gradient(to top, #34d399, #059669)"></span>
+              <span class="eq-bar" style="height:4px;background:linear-gradient(to top, #34d399, #059669)"></span>
+            </div>
+            <div>
+              <span id="speakingStatus" class="text-xs font-black uppercase tracking-widest text-emerald-400">💡 Human Heart Explanation</span>
+              <div id="speakingProgress" class="text-[11px] text-slate-400">Ready to play</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="currentPageReadingBadge" class="text-[11px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-bold border border-slate-700">Page 1</span>
+            <button id="viralShareBtn" class="text-[11px] bg-amber-500/20 border border-amber-500/50 text-amber-300 hover:bg-amber-500/30 px-2.5 py-1.5 rounded-lg font-bold transition cursor-pointer flex items-center gap-1">📲 Share</button>
+          </div>
+        </div>
+
+        <!-- Karaoke Text -->
+        <div class="mb-4">
+          <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1.5 px-1">
+            <span>💬 Tap any sentence to jump audio there:</span>
+            <div class="flex items-center gap-1">
+              <button id="decreaseFontBtn" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 font-bold text-xs transition">A−</button>
+              <button id="increaseFontBtn" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 font-bold text-xs transition">A+</button>
+            </div>
+          </div>
+          <div id="humanScript" class="text-slate-100 text-base leading-relaxed bg-slate-950/70 p-4 rounded-xl border border-slate-800/80 shadow-inner max-h-72 overflow-y-auto"></div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-track mb-3">
+          <div id="progressBar" class="progress-bar" style="width:0%"></div>
+        </div>
+
+        <!-- Controls Row -->
+        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <button id="playBtn" class="bg-amber-500 hover:bg-amber-400 text-black font-black px-4 py-2 rounded-lg text-sm transition cursor-pointer shadow-md shadow-amber-500/25 flex items-center gap-1.5">
+                ▶ Listen Again
+              </button>
+              <button id="pauseResumeBtn" class="bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/50 text-amber-300 font-bold px-4 py-2 rounded-lg text-sm transition cursor-pointer">
+                ⏸ Pause
+              </button>
+              <button id="replayBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-sm font-medium transition cursor-pointer">↺ Replay</button>
+              <button id="stopBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-400 px-3 py-2 rounded-lg text-sm transition cursor-pointer">⏹</button>
+            </div>
+            <button id="readNextPageBtn" class="hidden bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-bold px-3 py-2 rounded-lg text-xs transition cursor-pointer">
+              Next Page ⏭
+            </button>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
+            <div class="flex items-center gap-2">
+              <label class="text-[11px] text-slate-400">Voice:</label>
+              <select id="voiceEngineSelect" class="bg-slate-900 border border-slate-700 text-[11px] rounded-lg px-2 py-1.5 text-amber-300 font-bold focus:outline-none cursor-pointer">
+                <option value="cloud">☁️ Cloud HD (All Languages)</option>
+                <option value="device">💻 Device Voice</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-[11px] text-slate-400">Speed:</label>
+              <select id="speedSelect" class="bg-slate-900 border border-slate-700 text-[11px] rounded-lg px-2 py-1.5 text-slate-200 font-semibold focus:outline-none cursor-pointer">
+                <option value="0.75">0.75x — Slow & Clear</option>
+                <option value="0.9">0.9x</option>
+                <option value="1" selected>1.0x — Natural</option>
+                <option value="1.15">1.15x</option>
+                <option value="1.3">1.3x</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Value Footer -->
+    <div class="grid grid-cols-3 gap-2 mb-8 text-center">
+      <div class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-3">
+        <div class="text-xl mb-1">📜</div>
+        <div class="text-[11px] font-bold text-slate-200">Shloka Read Aloud</div>
+        <div class="text-[10px] text-slate-500">Original Sanskrit first</div>
+      </div>
+      <div class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-3">
+        <div class="text-xl mb-1">💖</div>
+        <div class="text-[11px] font-bold text-slate-200">Heart Touching Katha</div>
+        <div class="text-[10px] text-slate-500">Not robotic — real emotion</div>
+      </div>
+      <div class="bg-slate-900/50 border border-slate-800/60 rounded-xl p-3">
+        <div class="text-xl mb-1">🌍</div>
+        <div class="text-[11px] font-bold text-slate-200">9 Indian Languages</div>
+        <div class="text-[10px] text-slate-500">Your mother tongue</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Paywall Modal -->
+  <div id="paywallModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-amber-500/50 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative">
+      <button id="closePaywallBtn" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl cursor-pointer">✕</button>
+      <div class="inline-block bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[11px] font-extrabold px-3 py-1 rounded-full mb-3 uppercase tracking-widest">🚀 First 1,000 Installers Special</div>
+      <h2 class="text-2xl font-black text-white mb-2">Unlock Unlimited Katha</h2>
+      <p class="text-xs text-slate-400 mb-5 leading-relaxed">Hear every shloka read and every chapter explained in your mother tongue. Page by page. Forever.</p>
+      <div class="bg-slate-950 border border-amber-500/40 rounded-2xl p-4 mb-5">
+        <div class="flex items-center justify-center gap-2 mb-1">
+          <span class="text-slate-500 line-through text-lg font-bold">₹149/mo</span>
+          <span id="activePriceDisplay" class="text-3xl font-black text-amber-400">₹49</span>
+          <span class="text-xs text-slate-400">/ month</span>
+        </div>
+        <p class="text-[11px] text-emerald-400 font-medium">✅ Early-Bird Price — <span id="modalSpotsLeft">999</span> spots left</p>
+      </div>
+      <ul class="text-left text-xs text-slate-300 space-y-2.5 mb-6 px-1">
+        <li class="flex items-start gap-2">📜 <span><b>Every shloka read aloud</b> in its original Sanskrit/Hindi before explanation</span></li>
+        <li class="flex items-start gap-2">💬 <span><b>Emotional, human-style Katha</b> in 9 Indian languages</span></li>
+        <li class="flex items-start gap-2">📚 <span><b>Unlimited PDF Books & Pages</b> — Gita, Upanishads, stories, novels</span></li>
+        <li class="flex items-start gap-2">🔒 <span><b>Cancel anytime</b> via UPI or Card</span></li>
+      </ul>
+      <button id="subscribeNowBtn" class="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-black font-black py-4 rounded-xl text-sm shadow-lg shadow-amber-500/25 hover:brightness-110 transition cursor-pointer active:scale-[0.99]">
+        ⚡ Unlock Unlimited for ₹49 / month
+      </button>
+      <div class="mt-4 pt-3 border-t border-slate-800">
+        <button id="restorePurchaseBtn" class="text-[11px] text-slate-400 hover:text-amber-400 underline cursor-pointer">Already Pro? Restore Purchase</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating PWA Install Notification Popup -->
+  <div id="installNotification" class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md bg-slate-900/95 backdrop-blur-xl border border-amber-500/50 rounded-2xl p-4 shadow-2xl shadow-black/90 z-50 transform translate-y-36 opacity-0 transition-all duration-500 pointer-events-none">
+    <div class="flex items-start gap-3.5">
+      <div class="relative shrink-0">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-amber-700 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/30">🎧</div>
+        <span class="absolute -top-1 -right-1 flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+        </span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between gap-1 mb-0.5">
+          <h3 class="text-sm font-black text-white flex items-center gap-1.5">
+            Install KathaVoice App
+            <span class="bg-amber-500/20 text-amber-300 text-[10px] font-extrabold px-1.5 py-0.5 rounded border border-amber-500/30">FREE</span>
+          </h3>
+          <button id="dismissInstallNotification" class="text-slate-400 hover:text-white text-base leading-none p-1 cursor-pointer" aria-label="Close">✕</button>
+        </div>
+        <p class="text-xs text-slate-300 leading-snug mb-2">
+          Install on your <b id="detectedOsName" class="text-amber-300 font-bold">device</b> for 1-tap shloka explanations, offline reading & fullscreen experience!
+        </p>
+        <div class="flex flex-wrap items-center gap-1.5 mb-3 text-[10px] text-slate-400">
+          <span class="bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60 text-slate-300">🤖 Android</span>
+          <span class="bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60 text-slate-300">🪟 Windows</span>
+          <span class="bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60 text-slate-300">🍎 Mac & iOS</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="installPromptBtn" class="flex-1 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-black font-black py-2.5 px-3 rounded-xl text-xs shadow-md shadow-amber-500/25 transition cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98]">
+            <span id="installPromptBtnIcon">⬇️</span>
+            <span id="installPromptBtnText">Install Now</span>
+          </button>
+          <button id="dismissInstallBtn" class="text-xs text-slate-400 hover:text-slate-200 px-3 py-2 rounded-xl hover:bg-slate-800 transition cursor-pointer">
+            Later
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Universal Install Guide Modal (iOS, Mac Safari, Desktop) -->
+  <div id="installGuideModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-amber-500/50 rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl relative">
+      <button id="closeInstallGuideBtn" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl cursor-pointer">✕</button>
+      <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-amber-700 flex items-center justify-center text-3xl shadow-xl shadow-amber-500/30">🎧</div>
+      <h3 id="installGuideTitle" class="text-lg font-black text-white mb-1">Install KathaVoice</h3>
+      <p id="installGuideSubtitle" class="text-xs text-slate-400 mb-5">Quick 2-step setup to install on your screen:</p>
+      
+      <div id="installGuideSteps" class="text-left space-y-3 mb-6 text-xs text-slate-200">
+        <!-- Injected dynamically -->
+      </div>
+
+      <button id="understandInstallBtn" class="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-black font-black py-3 rounded-xl text-xs shadow-lg shadow-amber-500/20 hover:brightness-110 transition cursor-pointer">
+        Got It!
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 text-slate-100 text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xl transition-all duration-300 opacity-0 pointer-events-none z-[60] flex items-center gap-2 whitespace-nowrap">
+    <span id="toastIcon">🔔</span><span id="toastMessage"></span>
+  </div>
+
+  <script>
+  // ═══════════════════════════════════════════════════════════════════
+  //  CONFIGURATION
+  // ═══════════════════════════════════════════════════════════════════
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  const BACKEND_URL    = 'https://storyvoice-backend.vikasgudarad09.workers.dev';
+  const GEMINI_API_KEY = 'AIzaSyC2uKeMRA99bNzRQzqSs359Y6GkgXmn2sY';
+  const RAZORPAY_KEY   = 'rzp_test_YourKeyHere';
+  const APP_URL        = window.location.origin;
+
+  // Ordered by preference: fastest & most reliable first
+  const GEMINI_MODELS  = [
+    'gemini-3.5-flash-lite',
+    'gemini-flash-lite-latest',
+    'gemini-3.8-flash',
+    'gemini-3.5-flash'
+  ];
+
+  // ─── CROSS-PLATFORM PWA INSTALLATION ENGINE ──────────────────────
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').then((reg) => {
+        console.log('KathaVoice SW active:', reg.scope);
+      }).catch((err) => {
+        console.warn('SW registration failed:', err);
+      });
+    });
+  }
+
+  let deferredInstallPrompt = null;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+  function detectUserPlatform() {
+    const ua = navigator.userAgent || '';
+    if (/iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+      return { name: 'iPhone / iPad', isIOS: true };
+    }
+    if (/Android/.test(ua)) {
+      return { name: 'Android Phone', isAndroid: true };
+    }
+    if (/Macintosh|Mac OS X/.test(ua)) {
+      return { name: 'Mac', isMac: true };
+    }
+    if (/Windows NT/.test(ua)) {
+      return { name: 'Windows PC', isWindows: true };
+    }
+    return { name: 'your device', isOther: true };
+  }
+
+  const userPlatform = detectUserPlatform();
+  const detectedOsEl = document.getElementById('detectedOsName');
+  if (detectedOsEl) detectedOsEl.textContent = userPlatform.name;
+
+  function checkInstalledState() {
+    if (isStandalone || localStorage.getItem('kv_pwa_installed') === 'true') {
+      const headerBtn = document.getElementById('headerInstallBtn');
+      if (headerBtn) {
+        const iconEl = document.getElementById('headerInstallIcon');
+        const textEl = document.getElementById('headerInstallText');
+        if (iconEl) iconEl.textContent = '✅';
+        if (textEl) textEl.textContent = 'Installed';
+        headerBtn.className = 'flex items-center gap-1.5 text-xs font-bold bg-slate-900 border border-emerald-500/40 text-emerald-400 px-3 py-1.5 rounded-full transition cursor-pointer shrink-0';
+      }
+      return true;
+    }
+    return false;
+  }
+
+  function showInstallPopupNotification() {
+    if (checkInstalledState()) return;
+    if (sessionStorage.getItem('kv_install_dismissed') === 'true') return;
+
+    const popup = document.getElementById('installNotification');
+    if (!popup) return;
+    popup.classList.remove('translate-y-36', 'opacity-0', 'pointer-events-none');
+    popup.classList.add('translate-y-0', 'opacity-100');
+  }
+
+  function hideInstallPopupNotification(remember = true) {
+    const popup = document.getElementById('installNotification');
+    if (!popup) return;
+    popup.classList.remove('translate-y-0', 'opacity-100');
+    popup.classList.add('translate-y-36', 'opacity-0', 'pointer-events-none');
+    if (remember) {
+      sessionStorage.setItem('kv_install_dismissed', 'true');
+    }
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    setTimeout(() => {
+      showInstallPopupNotification();
+    }, 1500);
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    localStorage.setItem('kv_pwa_installed', 'true');
+    hideInstallPopupNotification(true);
+    checkInstalledState();
+    showToast('🎉 KathaVoice installed! Tap the icon anytime.', '🚀');
+  });
+
+  async function triggerInstallFlow() {
+    if (deferredInstallPrompt) {
+      try {
+        deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        if (choice && choice.outcome === 'accepted') {
+          localStorage.setItem('kv_pwa_installed', 'true');
+          hideInstallPopupNotification(true);
+          checkInstalledState();
+          showToast('Thank you! Installing KathaVoice...', '🎉');
+        }
+      } catch (err) {
+        console.warn('Install prompt error:', err);
+      }
+      deferredInstallPrompt = null;
+      return;
+    }
+
+    if (userPlatform.isIOS) {
+      openInstallGuideModal('ios');
+      return;
+    }
+
+    if (userPlatform.isMac && /Safari/.test(navigator.userAgent) && !/Chrome|Chromium|Edg/.test(navigator.userAgent)) {
+      openInstallGuideModal('mac_safari');
+      return;
+    }
+
+    openInstallGuideModal('desktop_universal');
+  }
+
+  function openInstallGuideModal(platform) {
+    const modal = document.getElementById('installGuideModal');
+    const titleEl = document.getElementById('installGuideTitle');
+    const stepsEl = document.getElementById('installGuideSteps');
+    if (!modal || !stepsEl) return;
+
+    if (platform === 'ios') {
+      titleEl.textContent = 'Install on iPhone / iPad';
+      stepsEl.innerHTML = `
+        <div class="flex items-start gap-3 p-3 bg-slate-950 rounded-xl border border-slate-800">
+          <div class="text-2xl shrink-0">1️⃣</div>
+          <div>
+            <p class="font-bold text-white mb-0.5">Tap the Share Icon</p>
+            <p class="text-slate-400">Tap the <b>Share button (⎋ with up-arrow)</b> at the bottom or top of Safari.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 p-3 bg-slate-950 rounded-xl border border-slate-800">
+          <div class="text-2xl shrink-0">2️⃣</div>
+          <div>
+            <p class="font-bold text-white mb-0.5">Choose "Add to Home Screen"</p>
+            <p class="text-slate-400">Scroll down and tap <b>'Add to Home Screen' (⊕)</b>.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 p-3 bg-slate-950 rounded-xl border border-slate-800">
+          <div class="text-2xl shrink-0">3️⃣</div>
+          <div>
+            <p class="font-bold text-white mb-0.5">Tap "Add"</p>
+            <p class="text-slate-400">Tap <b>Add</b> in top right. KathaVoice will appear right on your screen!</p>
+          </div>
+        </div>
+      `;
+    } else if (platform === 'mac_safari') {
+      titleEl.textContent = 'Install on Mac (Safari)';
+      stepsEl.innerHTML = `
+        <div class="flex items-start gap-3 p-3 bg-slate-950 rounded-xl border border-slate-800">
+          <div class="text-2xl shrink-0">1️⃣</div>
+          <div>
+            <p class="font-bold text-white mb-0.5">Click "File" in Top Menu</p>
+            <p class="text-slate-400">In Safari, click <b>File</b> in the top macOS menu bar.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 p-3 bg-slate-950 rounded-xl border border-slate-800">
+          <div class="text-2xl shrink-0">2️⃣</div>
+          <div>
+            <p class="font-bold text-white mb-0.5">Select "Add to Dock..."</p>
+            <p class="text-slate-400">Click <b>Add to Dock</b> to install KathaVoice as a standalone Mac application!</p>
+          </div>
+        </div>
+      `;
+    } else {
+      titleEl.textContent = 'Install on ' + userPlatform.name;
+      stepsEl.innerHTML = `
+        <div class="flex items-start gap-3 p-3 bg-slate-950 rounded-xl border border-slate-800">
+          <div class="text-2xl shrink-0">1️⃣</div>
+          <div>
+            <p class="font-bold text-white mb-0.5">Click Browser Install Icon</p>
+            <p class="text-slate-400">Look at the right side of your address bar for the <b>Install (⊕ / 💻)</b> icon.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 p-3 bg-slate-950 rounded-xl border border-slate-800">
+          <div class="text-2xl shrink-0">2️⃣</div>
+          <div>
+            <p class="font-bold text-white mb-0.5">Or Browser Menu (⋮)</p>
+            <p class="text-slate-400">Click <b>Menu (⋮) → 'Install KathaVoice'</b> or <b>'Save and share' → 'Install'</b>.</p>
+          </div>
+        </div>
+      `;
+    }
+
+    modal.classList.remove('hidden');
+  }
+
+  function closeInstallGuideModal() {
+    const modal = document.getElementById('installGuideModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    checkInstalledState();
+    setTimeout(() => {
+      showInstallPopupNotification();
+    }, 2500);
+
+    const hBtn = document.getElementById('headerInstallBtn');
+    if (hBtn) {
+      hBtn.onclick = () => {
+        if (checkInstalledState()) {
+          showToast('KathaVoice is already installed!', '✅');
+          return;
+        }
+        triggerInstallFlow();
+      };
+    }
+
+    const pBtn = document.getElementById('installPromptBtn');
+    if (pBtn) pBtn.onclick = triggerInstallFlow;
+
+    const dBtn1 = document.getElementById('dismissInstallNotification');
+    if (dBtn1) dBtn1.onclick = () => hideInstallPopupNotification(true);
+
+    const dBtn2 = document.getElementById('dismissInstallBtn');
+    if (dBtn2) dBtn2.onclick = () => hideInstallPopupNotification(true);
+
+    const cGuideBtn = document.getElementById('closeInstallGuideBtn');
+    if (cGuideBtn) cGuideBtn.onclick = closeInstallGuideModal;
+
+    const uGuideBtn = document.getElementById('understandInstallBtn');
+    if (uGuideBtn) uGuideBtn.onclick = closeInstallGuideModal;
+  });
+
+
+  // ─── Device ID ────────────────────────────────────────────────────
+  let deviceId = localStorage.getItem('kv_device_id');
+  if (!deviceId) {
+    deviceId = 'dev_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+    localStorage.setItem('kv_device_id', deviceId);
+  }
+
+  // ─── App State ────────────────────────────────────────────────────
+  let pdfDoc             = null;
+  let totalPagesCount    = 1;
+  let currentPage        = 1;
+  let currentPageImageB64 = null;
+  let currentDocType     = 'pdf';
+  let docPagesText       = [];
+  let currentShlokaText  = '';   // the original passage / shloka
+  let currentExplanation = '';   // the human explanation
+  let currentFontSize    = 16;
+
+  let serverState = {
+    spotsLeft: 999, activePrice: 49, trialsRemaining: 2,
+    isPro: localStorage.getItem('kv_is_pro') === 'true'
+  };
+
+  // ─── Audio Engine State ───────────────────────────────────────────
+  const audioPlayer = new Audio();
+  audioPlayer.playsInline = true;
+
+  // Phase 1 = reading the shloka, Phase 2 = explanation
+  let audioPhase         = 'idle'; // 'shloka' | 'explanation' | 'idle'
+  let speechChunks       = [];
+  let currentChunkIndex  = 0;
+  let isPlaying          = false;
+  let isPaused           = false;
+
+  // Sample passages
+  const SAMPLES = {
+    gita: `कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।\nमा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि॥\n\nयोगस्थः कुरु कर्माणि सङ्गं त्यक्त्वा धनञ्जय।\nसिद्ध्यसिद्ध्योः समो भूत्वा समत्वं योग उच्यते॥`,
+    upanishad: `ईशावास्यमिदग्ं सर्वं यत्किञ्च जगत्यां जगत्।\nतेन त्यक्तेन भुञ्जीथा मा गृधः कस्यस्विद्धनम्॥\n\nकुर्वन्नेवेह कर्माणि जिजीविषेच्छतग्ं समाः।\nएवं त्वयि नान्यथेतोऽस्ति न कर्म लिप्यते नरे॥`,
+    panchatantra: `In a great forest lived a Lion named Durgama, who killed animals daily without need. The elders gathered and said: "O King, we will send one animal each day. Spare the rest." The lion agreed. One day, a clever Hare came late. The lion roared: "Why are you late?!" The Hare bowed: "Another lion stopped me — he claims he is the real king of this forest!" The lion, enraged, said: "Take me to him!" The Hare led him to a deep well. The lion looked in and saw his own reflection roaring back. He leaped into the well to fight his enemy — and drowned. Wisdom defeated strength that day.`,
+    psychology: `Doing well with money has a little to do with how smart you are and a lot to do with how you behave. Behavior is hard to teach, even to really smart people. A genius who loses control of their emotions can be a financial disaster. The opposite is also true. Ordinary people with no financial education can be wealthy if they have a handful of behavioral skills that have nothing to do with formal measures of intelligence. Financial success is not a hard science. It is a soft skill, where how you behave is more important than what you know.`
+  };
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  TOAST NOTIFICATION
+  // ═══════════════════════════════════════════════════════════════════
+  function showToast(msg, icon = '🔔') {
+    const t = document.getElementById('toast');
+    document.getElementById('toastIcon').textContent = icon;
+    document.getElementById('toastMessage').textContent = msg;
+    t.classList.replace('opacity-0', 'opacity-100');
+    t.classList.remove('pointer-events-none');
+    setTimeout(() => { t.classList.replace('opacity-100', 'opacity-0'); t.classList.add('pointer-events-none'); }, 3500);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  BACKEND SYNC & MONETISATION
+  // ═══════════════════════════════════════════════════════════════════
+  async function syncAppStatus() {
+    try {
+      const data = await fetch(`${BACKEND_URL}/status?deviceId=${deviceId}`).then(r => r.json());
+      Object.assign(serverState, data);
+      if (data.isPro) localStorage.setItem('kv_is_pro', 'true');
+    } catch (_) {}
+    updateUI();
+  }
+
+  function updateUI() {
+    document.getElementById('spotsRemaining').textContent    = serverState.spotsLeft;
+    document.getElementById('modalSpotsLeft').textContent   = serverState.spotsLeft;
+    document.getElementById('activePriceDisplay').textContent = `₹${serverState.activePrice}`;
+    document.getElementById('subscribeNowBtn').textContent  = `⚡ Unlock Unlimited for ₹${serverState.activePrice} / month`;
+    const badge = document.getElementById('subStatusBadge');
+    const txt   = document.getElementById('trialBadgeText');
+    if (serverState.isPro) {
+      txt.textContent  = 'PRO — Unlimited Access';
+      badge.className  = 'flex items-center gap-1.5 text-xs font-bold bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-3 py-1.5 rounded-full cursor-pointer';
+    } else {
+      txt.textContent = `${serverState.trialsRemaining} Free Trial${serverState.trialsRemaining === 1 ? '' : 's'} Left`;
+      badge.className = 'flex items-center gap-1.5 text-xs font-bold bg-amber-500/15 border border-amber-500/40 text-amber-300 px-3 py-1.5 rounded-full hover:bg-amber-500/25 transition cursor-pointer shrink-0';
+    }
+  }
+  syncAppStatus();
+
+  document.getElementById('subStatusBadge').onclick = () => {
+    if (!serverState.isPro) showPaywall();
+    else showToast('You have Unlimited PRO access!', '👑');
+  };
+  function showPaywall() { document.getElementById('paywallModal').classList.remove('hidden'); }
+  function hidePaywall() { document.getElementById('paywallModal').classList.add('hidden'); }
+  document.getElementById('closePaywallBtn').onclick = hidePaywall;
+
+  document.getElementById('restorePurchaseBtn').onclick = () => {
+    const code = prompt('Enter your subscription email or transaction ID to restore:');
+    if (code) {
+      serverState.isPro = true;
+      localStorage.setItem('kv_is_pro', 'true');
+      updateUI(); hidePaywall();
+      showToast('Pro access restored! Unlimited Katha unlocked.', '👑');
+    }
+  };
+
+  document.getElementById('subscribeNowBtn').onclick = async () => {
+    if (RAZORPAY_KEY.includes('YourKeyHere') || RAZORPAY_KEY.includes('rzp_test')) {
+      if (!confirm(`[TEST MODE] Simulate ₹${serverState.activePrice}/mo KathaVoice PRO subscription?`)) return;
+      try {
+        await fetch(`${BACKEND_URL}/unlock-pro`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deviceId, paymentId: 'sim_' + Date.now() })
+        });
+      } catch (_) {}
+      serverState.isPro = true;
+      serverState.spotsLeft = Math.max(0, serverState.spotsLeft - 1);
+      localStorage.setItem('kv_is_pro', 'true');
+      updateUI(); hidePaywall();
+      showToast('🎉 PRO Unlocked! Unlimited Shloka & Katha access.', '👑');
+      return;
+    }
+    try {
+      new Razorpay({
+        key: RAZORPAY_KEY, amount: serverState.activePrice * 100, currency: 'INR',
+        name: 'KathaVoice', description: 'Unlimited Monthly Plan',
+        handler: async (response) => {
+          try { await fetch(`${BACKEND_URL}/unlock-pro`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId, paymentId: response.razorpay_payment_id }) }); } catch (_) {}
+          serverState.isPro = true; localStorage.setItem('kv_is_pro', 'true');
+          updateUI(); hidePaywall();
+          showToast('Welcome to KathaVoice PRO!', '👑');
+        },
+        theme: { color: '#f59e0b' }
+      }).open();
+    } catch (_) { showToast('Could not open payment. Check your internet.', '⚠️'); }
+  };
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  FILE PARSING
+  // ═══════════════════════════════════════════════════════════════════
+  const manualTextInput    = document.getElementById('manualTextInput');
+  const pdfCanvas          = document.getElementById('pdfCanvas');
+  const textDocPreview     = document.getElementById('textDocPreview');
+  const pageSelectorWizard = document.getElementById('pageSelectorWizard');
+  const pdfPreviewContainer = document.getElementById('pdfPreviewContainer');
+
+  // Drag & Drop
+  const dropZone = document.getElementById('dropZone');
+  ['dragenter','dragover'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('border-amber-400','bg-amber-500/10'); }));
+  ['dragleave','drop'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('border-amber-400','bg-amber-500/10'); }));
+  dropZone.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) loadFile(f); });
+  document.getElementById('fileInput').onchange = e => { if (e.target.files[0]) loadFile(e.target.files[0]); };
+
+  document.querySelectorAll('.sample-btn').forEach(btn => {
+    btn.onclick = () => {
+      const key = btn.dataset.sample;
+      if (SAMPLES[key]) {
+        manualTextInput.value = SAMPLES[key];
+        document.getElementById('fileNameDisplay').textContent = `Sample loaded: ${btn.textContent.trim()}`;
+        showToast(`Sample loaded! ${btn.textContent.trim()}`, '📜');
+      }
+    };
+  });
+  document.getElementById('clearTextBtn').onclick = () => { manualTextInput.value = ''; showToast('Cleared', '🧹'); };
+
+  async function loadFile(file) {
+    document.getElementById('fileNameDisplay').textContent = `📖 ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+    manualTextInput.value = '';
+    document.getElementById('manualTextContainer').classList.add('hidden');
+    pageSelectorWizard.classList.remove('hidden');
+
+    const fn = file.name.toLowerCase();
+    if (fn.endsWith('.pdf')) {
+      currentDocType = 'pdf';
+      document.getElementById('docTypeBadge').textContent = 'PDF';
+      pdfDoc = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+      totalPagesCount = pdfDoc.numPages;
+      currentPage = 1;
+      updatePageIndicators();
+      await renderSelectedPage(1);
+    } else if (fn.endsWith('.docx')) {
+      currentDocType = 'docx';
+      document.getElementById('docTypeBadge').textContent = 'DOCX';
+      pdfDoc = null; currentPageImageB64 = null;
+      const res = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+      chunkText(res.value || '');
+    } else {
+      currentDocType = 'txt';
+      document.getElementById('docTypeBadge').textContent = 'TXT';
+      pdfDoc = null; currentPageImageB64 = null;
+      chunkText(await file.text());
+    }
+    pageSelectorWizard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function chunkText(fullText) {
+    const words = fullText.split(/\s+/).filter(Boolean);
+    docPagesText = [];
+    for (let i = 0; i < words.length; i += 280) {
+      docPagesText.push(words.slice(i, i + 280).join(' '));
+    }
+    if (!docPagesText.length) docPagesText.push('Empty document.');
+    totalPagesCount = docPagesText.length;
+    currentPage = 1;
+    updatePageIndicators();
+    renderTextPage(1);
+  }
+
+  function updatePageIndicators() {
+    document.getElementById('totalPagesText').textContent    = `/ ${totalPagesCount}`;
+    document.getElementById('totalPagesBadge').textContent  = `${totalPagesCount} Page${totalPagesCount > 1 ? 's' : ''}`;
+    document.getElementById('previewPageIndicator').textContent = `Page ${currentPage}`;
+    document.getElementById('pageJumpInput').max = totalPagesCount;
+    document.getElementById('pageJumpInput').value = currentPage;
+    updateExplainButtonText();
+    document.getElementById('readNextPageBtn').classList.toggle('hidden', totalPagesCount <= 1);
+  }
+
+  function updateExplainButtonText() {
+    const mode = document.getElementById('flowModeSelect')?.value || 'explain_only';
+    const btnText = document.getElementById('explainBtnText');
+    const btnIcon = document.getElementById('explainBtnIcon');
+    if (!btnText) return;
+    if (mode === 'explain_only') {
+      btnIcon.textContent = '✨';
+      btnText.textContent = totalPagesCount > 1 ? `Explain Every Line of Page ${currentPage}` : `Explain Every Line Thoroughly`;
+    } else {
+      btnIcon.textContent = '🕉️';
+      btnText.textContent = totalPagesCount > 1 ? `Read Shloka & Explain Page ${currentPage}` : `Read Shloka & Explain`;
+    }
+  }
+
+  const flowModeEl = document.getElementById('flowModeSelect');
+  if (flowModeEl) {
+    flowModeEl.onchange = () => {
+      updateExplainButtonText();
+      const mode = flowModeEl.value;
+      if (mode === 'explain_only') {
+        showToast('Mode: Pure, fluent mother-tongue explanation of every line', '✨');
+      } else {
+        showToast('Mode: Shloka recitation first, then complete explanation', '📜');
+      }
+    };
+  }
+
+  async function renderSelectedPage(num) {
+    currentPage = Math.max(1, Math.min(num, totalPagesCount));
+    updatePageIndicators();
+    if (currentDocType === 'pdf' && pdfDoc) {
+      pdfCanvas.classList.remove('hidden'); textDocPreview.classList.add('hidden');
+      document.getElementById('scanBadge').textContent = '✅ Visual page ready for AI Vision!';
+      const pg = await pdfDoc.getPage(currentPage);
+      const vp = pg.getViewport({ scale: 1.3 });
+      pdfCanvas.height = vp.height; pdfCanvas.width = vp.width;
+      await pg.render({ canvasContext: pdfCanvas.getContext('2d'), viewport: vp }).promise;
+      currentPageImageB64 = pdfCanvas.toDataURL('image/jpeg', 0.78);
+    } else {
+      renderTextPage(currentPage);
+    }
+  }
+
+  function renderTextPage(num) {
+    currentPage = Math.max(1, Math.min(num, totalPagesCount));
+    updatePageIndicators();
+    pdfCanvas.classList.add('hidden'); textDocPreview.classList.remove('hidden');
+    const txt = docPagesText[currentPage - 1] || '';
+    textDocPreview.textContent = txt;
+    currentPageImageB64 = null;
+    document.getElementById('scanBadge').textContent = `📝 Text page loaded (${txt.split(' ').length} words)`;
+  }
+
+  document.getElementById('startFromPage1Btn').onclick = () => renderSelectedPage(1);
+  document.getElementById('prevPage').onclick = () => { if (currentPage > 1) renderSelectedPage(currentPage - 1); };
+  document.getElementById('nextPage').onclick = () => { if (currentPage < totalPagesCount) renderSelectedPage(currentPage + 1); };
+  document.getElementById('pageJumpInput').onchange = e => { const v = parseInt(e.target.value); if (!isNaN(v)) renderSelectedPage(v); };
+  document.getElementById('togglePreviewBtn').onclick = () => pdfPreviewContainer.classList.toggle('hidden');
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  CORE ENGINE — TWO-PHASE AI (READ SHLOKA → EXPLAIN IN HEART LANGUAGE)
+  // ═══════════════════════════════════════════════════════════════════
+  async function triggerExplanation() {
+    if (!serverState.isPro && serverState.trialsRemaining <= 0) { showPaywall(); return; }
+
+    const manualText = manualTextInput.value.trim();
+    let textContent  = manualText;
+    if (!textContent && (currentDocType === 'docx' || currentDocType === 'txt')) {
+      textContent = docPagesText[currentPage - 1] || '';
+    }
+    if (!currentPageImageB64 && !textContent) {
+      showToast('Please upload a PDF or paste a shloka / passage first!', '⚠️'); return;
+    }
+
+    unlockIOSAudio();
+    const targetLang = document.getElementById('langSelect').value;
+    const toneStyle  = document.getElementById('styleSelect').value;
+
+    const btn = document.getElementById('explainBtn');
+    btn.disabled = true;
+    document.getElementById('explainBtnIcon').textContent = '⏳';
+    document.getElementById('explainBtnText').textContent = 'Invoking the storyteller...';
+    stopAllAudio();
+
+    try {
+      // 1. Consume trial
+      try {
+        const td = await fetch(`${BACKEND_URL}/use-trial`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deviceId })
+        }).then(r => r.json());
+        if (td.error === 'TRIAL_LIMIT_REACHED' && !serverState.isPro) {
+          serverState.trialsRemaining = 0; updateUI(); showPaywall(); return;
+        }
+        if (td.trialsRemaining !== undefined) { serverState.trialsRemaining = td.trialsRemaining; updateUI(); }
+      } catch (_) {}
+
+      // 2. Build Gemini prompt — Thorough, line-by-line, emotionally resonant
+      const toneGuide = {
+        elder_wisdom: `Speak exactly like a deeply loving elder — a wise grandparent (naani or thatha) — sitting close with boundless warmth and patience. Use gentle pacing, personal heart-felt touches, and timeless simplicity that touches the listener's core.`,
+        storyteller:  `Speak like India's finest Katha Vachak on the village stage at dusk — voice ringing with emotion, deep conviction, and sacred devotion. Let every line come alive with vivid imagery and spiritual fire.`,
+        best_friend:  `Speak like your closest, most trusted friend having a heart-to-heart conversation over hot chai. Casual, honest, warm, and deeply comforting — making ancient wisdom feel completely personal.`,
+        philosopher:  `Speak like a calm zen philosopher at daybreak — peaceful, spacious, deeply profound. Silence between thoughts carries sacred weight, bringing quiet stillness to the listener's heart.`
+      };
+
+      const prompt = `You are a revered, deeply loved Indian Katha Vachak (sacred storyteller) explaining sacred texts to seekers.
+
+Your response MUST have TWO PARTS clearly marked:
+
+══════════════════════════
+PART 1 — [SHLOKA_START]
+══════════════════════════
+Carefully read the attached image or text. Extract and write out ALL the original shlokas, verses, or lines from this page in their EXACT original script (Sanskrit/Devanagari, Kannada, etc.). 
+Include EVERY verse on this page without leaving any line out.
+End this section with: [SHLOKA_END]
+
+══════════════════════════
+PART 2 — [EXPLANATION_START]
+══════════════════════════
+Now narrate a complete, heart-touching Katha in natural, flowing spoken **${targetLang}** language. ${toneGuide[toneStyle] || toneGuide.elder_wisdom}
+
+CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
+1. EXPLAIN EVERY SINGLE LINE — DO NOT SKIP ANYTHING:
+   - Walk through the entire page from top to bottom.
+   - Address EVERY verse, every line, and every concept on the page. Do NOT summarize or skip ahead.
+   - For each part, explain the literal meaning AND the psychological life secret hidden inside it.
+2. PURE SPOKEN HUMAN VOICE:
+   - Speak in natural, fluent, spoken ${targetLang}.
+   - Do NOT use bullet points, asterisks (*), markdown formatting, hashtags, or numbered lists.
+   - Use natural flowing paragraphs with pauses so it sounds like a real person talking from the heart.
+3. REAL LIFE RELEVANCE:
+   - Connect the wisdom directly to modern life — worry, work, relationships, duty, anger, peace, and surrender.
+4. TIMELESS BENEDICTION:
+   - Conclude with a warm, memorable life takeaway and blessing that comforts the listener's heart.
+End this section with: [EXPLANATION_END]`;
+
+      const parts = [];
+      if (textContent) {
+        parts.push({ text: `${prompt}\n\nTEXT/SHLOKA:\n${textContent}` });
+      } else if (currentPageImageB64) {
+        parts.push({ inlineData: { mimeType: 'image/jpeg', data: currentPageImageB64.split(',')[1] } });
+        parts.push({ text: prompt });
+      }
+
+      // 3. Multi-model fallback
+      let rawResponse = '';
+      let lastError   = '';
+
+      for (const model of GEMINI_MODELS) {
+        try {
+          document.getElementById('explainBtnText').textContent = `Invoking ${model}...`;
+          const data = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+            { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts }] }) }
+          ).then(r => r.json());
+
+          if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            rawResponse = data.candidates[0].content.parts[0].text;
+            break;
+          }
+          lastError = data.error?.message || 'No response';
+        } catch (e) { lastError = e.message; }
+      }
+
+      // Backend fallback for text-only
+      if (!rawResponse && textContent) {
+        try {
+          const fb = await fetch(`${BACKEND_URL}/explain`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: textContent, targetLang, toneStyle, deviceId })
+          }).then(r => r.json());
+          if (fb.explanation) rawResponse = fb.explanation;
+        } catch (_) {}
+      }
+
+      if (!rawResponse) throw new Error(lastError || 'Could not generate story. Please try again in a moment.');
+
+      // 4. Parse two-phase response
+      const shlokaMatch = rawResponse.match(/\[SHLOKA_START\]([\s\S]*?)\[SHLOKA_END\]/);
+      const explainMatch = rawResponse.match(/\[EXPLANATION_START\]([\s\S]*?)\[EXPLANATION_END\]/);
+
+      currentShlokaText  = (shlokaMatch ? shlokaMatch[1] : '').trim().replace(/[*#_~`]/g, '');
+      currentExplanation = (explainMatch ? explainMatch[1] : rawResponse).trim().replace(/[*#_~`]/g, '');
+
+      // Fallback if AI didn't use delimiters
+      if (!shlokaMatch && !explainMatch) {
+        const lines = rawResponse.trim().split('\n\n');
+        if (lines.length >= 2) {
+          currentShlokaText  = lines.slice(0, Math.ceil(lines.length / 3)).join('\n\n').replace(/[*#_~`]/g, '').trim();
+          currentExplanation = lines.slice(Math.ceil(lines.length / 3)).join('\n\n').replace(/[*#_~`]/g, '').trim();
+        } else {
+          currentShlokaText  = textContent || '';
+          currentExplanation = rawResponse.replace(/[*#_~`]/g, '').trim();
+        }
+      }
+
+      // 5. Render UI
+      document.getElementById('currentPageReadingBadge').textContent = `Page ${currentPage} of ${totalPagesCount}`;
+
+      const flowMode = document.getElementById('flowModeSelect')?.value || 'explain_only';
+      const shlokaCard = document.getElementById('shlokaCard');
+
+      if (currentShlokaText) {
+        document.getElementById('shlokaText').textContent = currentShlokaText;
+        shlokaCard.classList.remove('hidden');
+        document.getElementById('shlokaStatusBadge').textContent = (flowMode === 'shloka_first') ? '🔊 Reading Now' : '📖 Original Verse';
+        const skipBtn = document.getElementById('skipShlokaBtn');
+        if (skipBtn) skipBtn.classList.toggle('hidden', flowMode !== 'shloka_first');
+      } else {
+        shlokaCard.classList.add('hidden');
+      }
+
+      // Show explanation card with karaoke
+      const explanationCard = document.getElementById('explanationCard');
+      renderKaraokeScript(currentExplanation);
+      explanationCard.classList.remove('hidden');
+
+      document.getElementById('outputCard').classList.remove('hidden');
+      document.getElementById('outputCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // 6. Start audio
+      startTwoPhaseAudio();
+
+    } catch (err) {
+      showToast(err.message, '⚠️');
+    } finally {
+      btn.disabled = false;
+      updateExplainButtonText();
+    }
+  }
+
+  document.getElementById('explainBtn').onclick = triggerExplanation;
+
+  document.getElementById('readNextPageBtn').onclick = async () => {
+    if (currentPage < totalPagesCount) { await renderSelectedPage(currentPage + 1); await triggerExplanation(); }
+    else showToast('You have reached the final page. 🏁', '🕉️');
+  };
+
+  const skipShlokaBtnEl = document.getElementById('skipShlokaBtn');
+  if (skipShlokaBtnEl) {
+    skipShlokaBtnEl.onclick = () => {
+      jumpToSentence(0);
+      showToast('Switched to complete explanation! 💡', '✨');
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  AUDIO ENGINE: Fluent Shloka Recitation + Complete Katha Explanation
+  // ═══════════════════════════════════════════════════════════════════
+  function cleanShlokaTextForSpeech(text) {
+    if (!text) return '';
+    return text
+      .replace(/॥\s*[\d०-९]+\s*॥/g, '.\n') // strip Sanskrit verse numbers like ॥ १ ॥
+      .replace(/॥/g, '.\n')               // pause after full verse
+      .replace(/।/g, ', ')                // comma pause after half verse
+      .replace(/[\(\)\[\]\{\}\*\#\_~`]/g, '')
+      .replace(/\b\d+(\.\d+)?\b/g, '')     // remove standalone digits
+      .replace(/[ \t]+/g, ' ')
+      .trim();
+  }
+
+  function startTwoPhaseAudio() {
+    stopAllAudio();
+    if (!currentShlokaText && !currentExplanation) return;
+
+    const flowMode = document.getElementById('flowModeSelect')?.value || 'explain_only';
+    isPlaying = true; isPaused = false;
+
+    if (flowMode === 'explain_only' || !currentShlokaText) {
+      // Direct Heart Katha mode (Fluent, complete, natural mother tongue)
+      audioPhase = 'explanation';
+      showShlokaPhase(false);
+      document.getElementById('speakingStatus').textContent = '🎙️ Explaining every line in detail...';
+      document.getElementById('speakingProgress').textContent = 'Complete Katha';
+      document.getElementById('explanationEQ').classList.add('speaking');
+      document.getElementById('shlokaEQ').classList.remove('speaking');
+      speechChunks = splitIntoChunks(currentExplanation);
+      currentChunkIndex = 0;
+      updateProgressBar(0, speechChunks.length);
+      playNextChunkInPhase();
+    } else {
+      // Shloka first mode
+      audioPhase = 'shloka';
+      showShlokaPhase(true);
+      document.getElementById('speakingStatus').textContent = '📜 Reading the Shloka aloud...';
+      document.getElementById('speakingProgress').textContent = 'Phase 1 of 2';
+      document.getElementById('shlokaEQ').classList.add('speaking');
+      document.getElementById('explanationEQ').classList.remove('speaking');
+
+      const cleanShloka = cleanShlokaTextForSpeech(currentShlokaText);
+      speechChunks = splitIntoChunks(cleanShloka);
+      currentChunkIndex = 0;
+      updateProgressBar(0, speechChunks.length);
+      playNextChunkInPhase();
+    }
+  }
+
+  function onShlokaPhaseComplete() {
+    document.getElementById('speakingStatus').textContent = '💡 Now explaining every line in detail...';
+    document.getElementById('speakingProgress').textContent = 'Phase 2 of 2';
+    document.getElementById('shlokaEQ').classList.remove('speaking');
+    showShlokaPhase(false);
+
+    setTimeout(() => {
+      if (!isPlaying || isPaused) return;
+      audioPhase = 'explanation';
+      speechChunks = splitIntoChunks(currentExplanation);
+      currentChunkIndex = 0;
+      document.getElementById('explanationEQ').classList.add('speaking');
+      updateProgressBar(0, speechChunks.length);
+      playNextChunkInPhase();
+    }, 1200);
+  }
+
+  function onExplanationPhaseComplete() {
+    isPlaying = false;
+    audioPhase = 'idle';
+    document.getElementById('speakingStatus').textContent = '✅ Katha Complete';
+    document.getElementById('speakingProgress').textContent = 'Tap ↺ to hear again';
+    document.getElementById('explanationEQ').classList.remove('speaking');
+    document.getElementById('shlokaEQ').classList.remove('speaking');
+    document.querySelectorAll('.k-sent').forEach(el => el.classList.remove('active'));
+    updateProgressBar(speechChunks.length, speechChunks.length);
+    showToast('Katha complete 🙏 Tap "Next Page" to continue!', '🕉️');
+  }
+
+  function sanitizeForSpeech(text) {
+    if (!text) return '';
+    return text
+      // Remove all quotation marks (straight, smart/curly quotes, guillemets, backticks)
+      .replace(/["'“”‘’«»„‟`]/g, '')
+      // Remove markdown, symbols, hashtags, asterisks
+      .replace(/[*#_~]/g, '')
+      // Remove brackets and parentheses
+      .replace(/[\(\)\[\]\{\}\<\>]/g, '')
+      // Replace dashes, colons, semicolons with gentle pauses
+      .replace(/[-–—]/g, ' ')
+      .replace(/[:;]/g, ', ')
+      // Normalize whitespace
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function playNextChunkInPhase() {
+    if (!isPlaying || isPaused) return;
+
+    if (currentChunkIndex >= speechChunks.length) {
+      if (audioPhase === 'shloka') onShlokaPhaseComplete();
+      else onExplanationPhaseComplete();
+      return;
+    }
+
+    if (audioPhase === 'explanation') highlightSentence(currentChunkIndex);
+    updateProgressBar(currentChunkIndex, speechChunks.length);
+
+    const rawChunk = speechChunks[currentChunkIndex];
+    const cleanSpeech = sanitizeForSpeech(rawChunk) || rawChunk;
+    const engine = document.getElementById('voiceEngineSelect').value;
+    const speed  = parseFloat(document.getElementById('speedSelect').value || '1');
+
+    if (engine === 'cloud') {
+      let lang = getLangShort();
+      if (audioPhase === 'shloka') {
+        if (/[\u0C80-\u0CFF]/.test(cleanSpeech)) lang = 'kn';      // Kannada
+        else if (/[\u0B80-\u0BFF]/.test(cleanSpeech)) lang = 'ta'; // Tamil
+        else if (/[\u0C00-\u0C7F]/.test(cleanSpeech)) lang = 'te'; // Telugu
+        else if (/[\u0900-\u097F]/.test(cleanSpeech)) lang = 'hi'; // Devanagari Sanskrit / Hindi
+        else lang = 'hi';
+      }
+      audioPlayer.src = `${BACKEND_URL}/tts?tl=${lang}&q=${encodeURIComponent(cleanSpeech)}`;
+      audioPlayer.playbackRate = audioPhase === 'shloka' ? Math.min(speed, 0.85) : speed;
+      audioPlayer.onended = () => { if (isPlaying && !isPaused) { currentChunkIndex++; playNextChunkInPhase(); } };
+      audioPlayer.onerror = () => playDeviceFallback(cleanSpeech, speed);
+      audioPlayer.play().catch(() => playDeviceFallback(cleanSpeech, speed));
+    } else {
+      playDeviceFallback(cleanSpeech, speed);
+    }
+  }
+
+  function playDeviceFallback(chunk, speed) {
+    if (!isPlaying || isPaused || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const cleanChunk = sanitizeForSpeech(chunk) || chunk;
+    const utter = new SpeechSynthesisUtterance(cleanChunk);
+    const voices = window.speechSynthesis.getVoices();
+
+    const code = audioPhase === 'shloka' ? 'hi' : getLangCode();
+    const short = code.split('-')[0].toLowerCase();
+    const voice = voices.find(v => v.lang.toLowerCase().startsWith(short)) ||
+                  voices.find(v => v.lang.toLowerCase().includes('en'));
+    if (voice) utter.voice = voice;
+    utter.rate  = audioPhase === 'shloka' ? Math.min(speed * 0.82, 0.85) : speed * 0.95;
+    utter.pitch = audioPhase === 'shloka' ? 1.05 : 1.0;
+    utter.onend = () => { if (isPlaying && !isPaused) { currentChunkIndex++; playNextChunkInPhase(); } };
+    utter.onerror = () => { if (isPlaying && !isPaused) { currentChunkIndex++; playNextChunkInPhase(); } };
+    window.speechSynthesis.speak(utter);
+  }
+
+  function getLangShort() {
+    const sel = document.getElementById('langSelect');
+    return sel.options[sel.selectedIndex].dataset.short || 'en';
+  }
+  function getLangCode() {
+    const sel = document.getElementById('langSelect');
+    return sel.options[sel.selectedIndex].dataset.lang || 'en-IN';
+  }
+
+  function splitIntoChunks(text) {
+    if (!text) return [];
+    const rawChunks = text.replace(/([.?!।॥\n]{1,3})\s*/g, '$1|SPLIT|')
+      .split('|SPLIT|').map(s => s.trim()).filter(Boolean);
+    const safeChunks = [];
+    for (const chunk of rawChunks) {
+      if (chunk.length <= 180) {
+        safeChunks.push(chunk);
+      } else {
+        const subParts = chunk.replace(/([,;:]\s*)/g, '$1|SUB|').split('|SUB|');
+        let currentSub = '';
+        for (const sub of subParts) {
+          if ((currentSub + ' ' + sub).trim().length <= 180) {
+            currentSub = (currentSub + ' ' + sub).trim();
+          } else {
+            if (currentSub) safeChunks.push(currentSub);
+            currentSub = sub.trim();
+          }
+        }
+        if (currentSub) safeChunks.push(currentSub);
+      }
+    }
+    return safeChunks;
+  }
+
+  function showShlokaPhase(on) {
+    const card = document.getElementById('shlokaCard');
+    if (on) card.classList.add('reading-shloka-phase');
+    else card.classList.remove('reading-shloka-phase');
+    const badge = document.getElementById('shlokaStatusBadge');
+    if (badge) badge.textContent = on ? '🔊 Reading Now' : '✅ Done';
+  }
+
+  function updateProgressBar(current, total) {
+    const pct = total ? Math.round((current / total) * 100) : 0;
+    document.getElementById('progressBar').style.width = `${pct}%`;
+  }
+
+  function unlockIOSAudio() {
+    try {
+      audioPlayer.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+      audioPlayer.play().then(() => { audioPlayer.pause(); audioPlayer.currentTime = 0; }).catch(() => {});
+    } catch (_) {}
+  }
+
+  function stopAllAudio() {
+    isPlaying = false; isPaused = false; audioPhase = 'idle';
+    speechChunks = []; currentChunkIndex = 0;
+    audioPlayer.pause(); audioPlayer.currentTime = 0;
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    document.getElementById('speakingStatus').textContent = '⏹ Stopped';
+    document.getElementById('speakingProgress').textContent = 'Ready to play';
+    document.getElementById('progressBar').style.width = '0%';
+    document.getElementById('shlokaEQ').classList.remove('speaking');
+    document.getElementById('explanationEQ').classList.remove('speaking');
+    document.getElementById('shlokaCard').classList.remove('reading-shloka-phase');
+    document.getElementById('shlokaStatusBadge').textContent = 'Now Reading';
+    document.getElementById('pauseResumeBtn').textContent = '⏸ Pause';
+    document.querySelectorAll('.k-sent').forEach(el => el.classList.remove('active'));
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  KARAOKE SCRIPT RENDERER
+  // ═══════════════════════════════════════════════════════════════════
+  function renderKaraokeScript(text) {
+    const container = document.getElementById('humanScript');
+    container.innerHTML = '';
+    container.style.fontSize = `${currentFontSize}px`;
+    const sentences = splitIntoChunks(text);
+    sentences.forEach((s, i) => {
+      const span = document.createElement('span');
+      span.className = 'k-sent';
+      span.id = `ks-${i}`;
+      span.textContent = s + ' ';
+      span.onclick = () => jumpToSentence(i);
+      container.appendChild(span);
+    });
+  }
+
+  function highlightSentence(index) {
+    document.querySelectorAll('.k-sent').forEach((el, i) => {
+      if (i === index) { el.classList.add('active'); el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+      else el.classList.remove('active');
+    });
+  }
+
+  function jumpToSentence(index) {
+    if (audioPhase !== 'explanation') {
+      // Skip to explanation phase immediately
+      audioPlayer.pause();
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      audioPhase = 'explanation';
+      speechChunks = splitIntoChunks(currentExplanation);
+      document.getElementById('explanationEQ').classList.add('speaking');
+      showShlokaPhase(false);
+    }
+    currentChunkIndex = Math.max(0, Math.min(index, speechChunks.length - 1));
+    isPlaying = true; isPaused = false;
+    playNextChunkInPhase();
+  }
+
+  document.getElementById('increaseFontBtn').onclick = () => { currentFontSize = Math.min(24, currentFontSize + 2); document.getElementById('humanScript').style.fontSize = `${currentFontSize}px`; };
+  document.getElementById('decreaseFontBtn').onclick = () => { currentFontSize = Math.max(13, currentFontSize - 2); document.getElementById('humanScript').style.fontSize = `${currentFontSize}px`; };
+
+  // ─── Player Controls ──────────────────────────────────────────────
+  document.getElementById('playBtn').onclick = () => {
+    if (!currentExplanation) { showToast('Generate an explanation first!', '⚠️'); return; }
+    startTwoPhaseAudio();
+  };
+
+  document.getElementById('pauseResumeBtn').onclick = () => {
+    if (!isPlaying && !isPaused) { if (currentExplanation) startTwoPhaseAudio(); return; }
+    isPaused = !isPaused;
+    if (isPaused) {
+      audioPlayer.pause();
+      if (window.speechSynthesis) window.speechSynthesis.pause();
+      document.getElementById('speakingStatus').textContent = '⏸ Paused';
+      document.getElementById('pauseResumeBtn').textContent = '▶ Resume';
+      document.getElementById('shlokaEQ').classList.remove('speaking');
+      document.getElementById('explanationEQ').classList.remove('speaking');
+    } else {
+      document.getElementById('pauseResumeBtn').textContent = '⏸ Pause';
+      if (audioPhase === 'shloka') document.getElementById('shlokaEQ').classList.add('speaking');
+      if (audioPhase === 'explanation') document.getElementById('explanationEQ').classList.add('speaking');
+      audioPlayer.play().catch(() => playNextChunkInPhase());
+      if (window.speechSynthesis) window.speechSynthesis.resume();
+    }
+  };
+
+  document.getElementById('replayBtn').onclick = () => { if (currentExplanation) startTwoPhaseAudio(); };
+  document.getElementById('stopBtn').onclick = stopAllAudio;
+
+  document.getElementById('speedSelect').onchange = () => {
+    audioPlayer.playbackRate = parseFloat(document.getElementById('speedSelect').value || '1');
+  };
+
+  // ─── Share ────────────────────────────────────────────────────────
+  document.getElementById('viralShareBtn').onclick = async () => {
+    const lang = document.getElementById('langSelect').value;
+    const snippet = currentExplanation ? currentExplanation.slice(0, 120) + '...' : 'Hear scriptures explained like a human in your mother tongue!';
+    const msg = `🕉️ I heard this Shloka explained in ${lang} on KathaVoice:\n\n"${snippet}"\n\n👉 First 2 explanations FREE + ₹49/mo offer: ${APP_URL}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'KathaVoice — Sacred Stories', text: msg, url: APP_URL }); showToast('Shared!', '🎉'); }
+      catch (_) {}
+    } else {
+      await navigator.clipboard.writeText(msg);
+      showToast('Story & invite link copied to clipboard!', '📋');
+    }
+  };
+
+  // Spacebar = play/pause
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      document.getElementById('pauseResumeBtn').click();
+    }
+  });
+  </script>
+</body>
+</html>
