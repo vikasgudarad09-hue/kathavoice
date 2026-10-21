@@ -125,7 +125,7 @@
   <main class="max-w-2xl mx-auto px-4 pt-5 relative z-10">
 
     <!-- Header -->
-    <header class="flex items-center justify-between mb-6 pb-4 border-b border-slate-800/60">
+    <header class="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-800/60">
       <div class="flex items-center gap-3">
         <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-amber-700 flex items-center justify-center text-2xl shadow-xl shadow-amber-500/30 ring-2 ring-amber-400/20">🎧</div>
         <div>
@@ -136,7 +136,13 @@
           <p class="text-[11px] text-slate-400">Listen to the shloka. Then hear the story it tells.</p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center justify-end gap-2">
+        <button id="myLibraryBtn" class="flex items-center gap-1.5 text-xs font-bold bg-slate-800/90 border border-slate-700 hover:border-amber-500/50 text-slate-200 px-3 py-1.5 rounded-full hover:bg-slate-700 transition cursor-pointer shrink-0">
+          📚 Library (<span id="libraryCountBadge">0</span>)
+        </button>
+        <button id="supportBtn" class="flex items-center gap-1.5 text-xs font-bold bg-purple-500/20 border border-purple-500/50 text-purple-300 px-3 py-1.5 rounded-full hover:bg-purple-500/30 transition cursor-pointer shrink-0">
+          💖 Sponsor / Pay
+        </button>
         <button id="headerInstallBtn" class="flex items-center gap-1.5 text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-black px-3 py-1.5 rounded-full shadow-md shadow-amber-500/20 transition cursor-pointer shrink-0">
           <span id="headerInstallIcon">📱</span> <span id="headerInstallText">Install App</span>
         </button>
@@ -145,6 +151,20 @@
         </button>
       </div>
     </header>
+
+    <!-- Library Section (Saved Books & Reading Progress) -->
+    <section id="librarySection" class="hidden mb-6 bg-slate-900/95 border border-amber-500/30 rounded-2xl p-4 shadow-xl shadow-amber-500/5 transition-all">
+      <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-black text-amber-400">📚 My Saved Books & Reading Library</span>
+          <span id="libraryCountPill" class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-500/30">0 Books</span>
+        </div>
+        <button id="closeLibraryBtn" class="text-slate-400 hover:text-white text-xs cursor-pointer p-1">✕ Close</button>
+      </div>
+      <div id="libraryList" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
 
     <!-- Step 1: Upload -->
     <section class="mb-5">
@@ -394,18 +414,109 @@
         </div>
         <p class="text-[11px] text-emerald-400 font-medium">✅ Early-Bird Price — <span id="modalSpotsLeft">999</span> spots left</p>
       </div>
-      <ul class="text-left text-xs text-slate-300 space-y-2.5 mb-6 px-1">
+      <ul class="text-left text-xs text-slate-300 space-y-2.5 mb-5 px-1">
         <li class="flex items-start gap-2">📜 <span><b>Every shloka read aloud</b> in its original Sanskrit/Hindi before explanation</span></li>
         <li class="flex items-start gap-2">💬 <span><b>Emotional, human-style Katha</b> in 9 Indian languages</span></li>
         <li class="flex items-start gap-2">📚 <span><b>Unlimited PDF Books & Pages</b> — Gita, Upanishads, stories, novels</span></li>
         <li class="flex items-start gap-2">🔒 <span><b>Cancel anytime</b> via UPI or Card</span></li>
       </ul>
-      <button id="subscribeNowBtn" class="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-black font-black py-4 rounded-xl text-sm shadow-lg shadow-amber-500/25 hover:brightness-110 transition cursor-pointer active:scale-[0.99]">
-        ⚡ Unlock Unlimited for ₹49 / month
+
+      <!-- Direct Real Payment (PhonePe QR / UPI / PayPal) -->
+      <button id="openDirectPayFromPaywallBtn" class="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:brightness-110 text-white font-black py-3.5 rounded-xl text-xs shadow-lg shadow-purple-500/25 transition cursor-pointer mb-2.5 flex items-center justify-center gap-2">
+        <span>📱 Pay Real ₹49 via PhonePe QR / UPI / PayPal</span>
       </button>
+
+      <button id="subscribeNowBtn" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3 rounded-xl text-xs border border-slate-700 transition cursor-pointer">
+        ⚡ Razorpay Card / NetBanking
+      </button>
+
       <div class="mt-4 pt-3 border-t border-slate-800">
         <button id="restorePurchaseBtn" class="text-[11px] text-slate-400 hover:text-amber-400 underline cursor-pointer">Already Pro? Restore Purchase</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Real Payment & Sponsor Modal (PhonePe QR + UPI + PayPal + GitHub Sponsors) -->
+  <div id="supportCreatorModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-purple-500/50 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative my-auto">
+      <button id="closeSupportModalBtn" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl cursor-pointer">✕</button>
+      
+      <!-- Creator Badge -->
+      <div class="inline-block bg-purple-500/20 border border-purple-500/40 text-purple-300 text-[11px] font-extrabold px-3 py-1 rounded-full mb-2 uppercase tracking-widest">
+        🙏 Direct Seva & Support
+      </div>
+      
+      <h2 class="text-2xl font-black text-white mb-0.5">Support Vikas Prabhu Gudarad</h2>
+      <p class="text-xs text-amber-400 font-semibold mb-3">Creator & Developer of KathaVoice</p>
+      
+      <!-- User's Heartfelt Message -->
+      <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 mb-4 text-left">
+        <p class="text-xs text-slate-200 leading-relaxed italic">
+          "If you pay or support, it gives me the energy and resources to keep making KathaVoice more user-friendly, deeply emotional, and a lovable source of sacred wisdom for everyone."
+        </p>
+      </div>
+
+      <!-- Real PhonePe QR Code -->
+      <div class="bg-black/70 border border-purple-500/40 rounded-2xl p-4 mb-3.5">
+        <div class="text-xs font-bold text-purple-300 mb-2">📱 Scan with PhonePe / GPay / Paytm / BHIM</div>
+        <img src="payment-qr.jpg" alt="PhonePe QR Code - Vikas Prabhu Gudarad" class="w-52 h-auto mx-auto rounded-xl shadow-lg border border-purple-500/30 mb-2" />
+        <div class="text-xs font-black text-white">VIKAS PRABHU GUDARAD</div>
+        <div class="text-[10px] text-slate-400 mt-0.5">Accepted across all Indian Bank & UPI Apps</div>
+      </div>
+
+      <!-- 1-Tap UPI and Copy -->
+      <div class="space-y-2 mb-3.5">
+        <a href="upi://pay?pa=gudaradvikas09@gmail.com&pn=Vikas%20Prabhu%20Gudarad&cu=INR" 
+           class="block w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:brightness-110 text-white font-black py-3 rounded-xl text-xs shadow-md transition cursor-pointer">
+          ⚡ 1-Tap Pay with UPI App (₹49 / Any Amount)
+        </a>
+        
+        <div class="flex items-center gap-2 bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+          <div class="flex-1 text-left min-w-0">
+            <div class="text-[10px] text-slate-500">UPI ID:</div>
+            <div class="text-xs font-mono font-bold text-amber-300 truncate">gudaradvikas09@gmail.com</div>
+          </div>
+          <button id="copyUpiBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-700 transition cursor-pointer shrink-0">
+            📋 Copy UPI
+          </button>
+        </div>
+      </div>
+
+      <!-- PayPal (International Donors) -->
+      <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 mb-3 text-left">
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm">🌐</span>
+            <span class="text-xs font-bold text-blue-400">PayPal (International Support)</span>
+          </div>
+          <a href="https://www.paypal.com/paypalme/gudaradvikas09" target="_blank" rel="noopener" class="text-[11px] bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 px-2.5 py-1 rounded-lg font-bold transition">
+            Open PayPal ↗
+          </a>
+        </div>
+        <div class="flex items-center justify-between text-[11px] text-slate-400">
+          <span>Email: <b class="text-slate-200 font-mono">gudaradvikas09@gmail.com</b></span>
+          <button id="copyPaypalBtn" class="text-slate-400 hover:text-amber-300 underline cursor-pointer text-[10px]">Copy</button>
+        </div>
+      </div>
+
+      <!-- GitHub Sponsors -->
+      <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800/80 mb-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-base">💖</span>
+          <div class="text-left">
+            <div class="text-xs font-bold text-pink-400">GitHub Sponsors</div>
+            <div class="text-[10px] text-slate-400">Support development monthly</div>
+          </div>
+        </div>
+        <a href="https://github.com/sponsors/vikasgudarad09-hue" target="_blank" rel="noopener" class="text-[11px] bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-500/40 px-2.5 py-1 rounded-lg font-bold transition">
+          Sponsor ↗
+        </a>
+      </div>
+
+      <!-- Activate PRO button -->
+      <button id="confirmPaidBtn" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:brightness-110 text-black font-black py-3 rounded-xl text-xs shadow-md transition cursor-pointer">
+        ✅ I Have Paid / Activate Unlimited Katha
+      </button>
     </div>
   </div>
 
@@ -809,6 +920,60 @@
   function hidePaywall() { document.getElementById('paywallModal').classList.add('hidden'); }
   document.getElementById('closePaywallBtn').onclick = hidePaywall;
 
+  // ─── Real Payment & Creator Support Modal Handlers ─────────────────
+  const supportModalEl = document.getElementById('supportCreatorModal');
+  function showSupportModal() {
+    hidePaywall();
+    if (supportModalEl) supportModalEl.classList.remove('hidden');
+  }
+  function hideSupportModal() {
+    if (supportModalEl) supportModalEl.classList.add('hidden');
+  }
+
+  const supportBtnEl = document.getElementById('supportBtn');
+  if (supportBtnEl) supportBtnEl.onclick = showSupportModal;
+
+  const openDirectPayBtnEl = document.getElementById('openDirectPayFromPaywallBtn');
+  if (openDirectPayBtnEl) openDirectPayBtnEl.onclick = showSupportModal;
+
+  const closeSupportModalBtnEl = document.getElementById('closeSupportModalBtn');
+  if (closeSupportModalBtnEl) closeSupportModalBtnEl.onclick = hideSupportModal;
+
+  const copyUpiBtnEl = document.getElementById('copyUpiBtn');
+  if (copyUpiBtnEl) {
+    copyUpiBtnEl.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText('gudaradvikas09@gmail.com');
+        showToast('UPI ID copied: gudaradvikas09@gmail.com', '📋');
+      } catch (_) {
+        prompt('Copy UPI ID:', 'gudaradvikas09@gmail.com');
+      }
+    };
+  }
+
+  const copyPaypalBtnEl = document.getElementById('copyPaypalBtn');
+  if (copyPaypalBtnEl) {
+    copyPaypalBtnEl.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText('gudaradvikas09@gmail.com');
+        showToast('PayPal Email copied: gudaradvikas09@gmail.com', '📋');
+      } catch (_) {
+        prompt('Copy PayPal Email:', 'gudaradvikas09@gmail.com');
+      }
+    };
+  }
+
+  const confirmPaidBtnEl = document.getElementById('confirmPaidBtn');
+  if (confirmPaidBtnEl) {
+    confirmPaidBtnEl.onclick = () => {
+      serverState.isPro = true;
+      localStorage.setItem('kv_is_pro', 'true');
+      updateUI();
+      hideSupportModal();
+      showToast('🙏 Thank you for your support! Unlimited Katha unlocked.', '💖');
+    };
+  }
+
   document.getElementById('restorePurchaseBtn').onclick = () => {
     const code = prompt('Enter your subscription email or transaction ID to restore:');
     if (code) {
@@ -851,6 +1016,224 @@
   };
 
   // ═══════════════════════════════════════════════════════════════════
+  //  INDEXEDDB LIBRARY SYSTEM: Auto-Save Books & Resume Reading
+  // ═══════════════════════════════════════════════════════════════════
+  const DB_NAME = 'KathaVoiceDB';
+  const DB_VERSION = 1;
+  const STORE_NAME = 'documents';
+  let activeDocId = null;
+
+  function openLibraryDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function saveDocToLibrary(id, name, type, totalPages, lastPage, dataBlobOrText) {
+    try {
+      const db = await openLibraryDB();
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      store.put({
+        id,
+        name,
+        type,
+        totalPages,
+        lastPage: lastPage || 1,
+        data: dataBlobOrText,
+        updatedAt: Date.now()
+      });
+      tx.oncomplete = () => renderLibraryUI();
+    } catch (e) {
+      console.warn('Library save error:', e);
+    }
+  }
+
+  async function getLibraryDocs() {
+    try {
+      const db = await openLibraryDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.getAll();
+        req.onsuccess = () => {
+          const docs = req.result || [];
+          docs.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+          resolve(docs);
+        };
+        req.onerror = () => resolve([]);
+      });
+    } catch (_) {
+      return [];
+    }
+  }
+
+  async function deleteDocFromLibrary(id) {
+    try {
+      const db = await openLibraryDB();
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).delete(id);
+      tx.oncomplete = () => {
+        if (activeDocId === id) activeDocId = null;
+        renderLibraryUI();
+        showToast('Book removed from library', '🗑️');
+      };
+    } catch (_) {}
+  }
+
+  async function updateDocLastPage(id, lastPage) {
+    if (!id) return;
+    try {
+      const db = await openLibraryDB();
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.get(id);
+      req.onsuccess = () => {
+        const doc = req.result;
+        if (doc) {
+          doc.lastPage = lastPage;
+          doc.updatedAt = Date.now();
+          store.put(doc);
+        }
+      };
+    } catch (_) {}
+  }
+
+  async function resumeDocFromLibrary(doc) {
+    try {
+      activeDocId = doc.id;
+      document.getElementById('fileNameDisplay').textContent = `📖 ${doc.name}`;
+      manualTextInput.value = '';
+      document.getElementById('manualTextContainer').classList.add('hidden');
+      pageSelectorWizard.classList.remove('hidden');
+
+      if (doc.type === 'pdf') {
+        currentDocType = 'pdf';
+        document.getElementById('docTypeBadge').textContent = 'PDF';
+        pdfDoc = await pdfjsLib.getDocument({ data: doc.data }).promise;
+        totalPagesCount = pdfDoc.numPages;
+        currentPage = Math.max(1, Math.min(doc.lastPage || 1, totalPagesCount));
+        updatePageIndicators();
+        await renderSelectedPage(currentPage);
+      } else {
+        currentDocType = doc.type || 'txt';
+        document.getElementById('docTypeBadge').textContent = currentDocType.toUpperCase();
+        pdfDoc = null; currentPageImageB64 = null;
+        chunkText(doc.data || '');
+        currentPage = Math.max(1, Math.min(doc.lastPage || 1, totalPagesCount));
+        updatePageIndicators();
+        renderTextPage(currentPage);
+      }
+
+      document.getElementById('librarySection').classList.add('hidden');
+      pageSelectorWizard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      showToast(`Resumed "${doc.name}" at Page ${currentPage} 🙏`, '📖');
+    } catch (err) {
+      showToast('Could not resume book: ' + err.message, '⚠️');
+    }
+  }
+
+  async function renderLibraryUI() {
+    const docs = await getLibraryDocs();
+    const list = document.getElementById('libraryList');
+    const countBadge = document.getElementById('libraryCountBadge');
+    const countPill = document.getElementById('libraryCountPill');
+
+    if (countBadge) countBadge.textContent = docs.length;
+    if (countPill) countPill.textContent = `${docs.length} Book${docs.length === 1 ? '' : 's'}`;
+
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (docs.length === 0) {
+      list.innerHTML = `
+        <div class="text-center py-6 px-4 bg-slate-950/60 rounded-xl border border-slate-800/80">
+          <div class="text-3xl mb-2">📚</div>
+          <div class="text-xs font-bold text-slate-300 mb-1">Your Library is Empty</div>
+          <div class="text-[11px] text-slate-500 max-w-xs mx-auto">
+            Upload any PDF book or paste a passage. It will automatically save here so you can continue listening anytime!
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    docs.forEach(doc => {
+      const item = document.createElement('div');
+      item.className = 'bg-slate-950/90 border border-slate-800 hover:border-amber-500/40 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2 transition';
+      const pct = doc.totalPages ? Math.round(((doc.lastPage || 1) / doc.totalPages) * 100) : 0;
+
+      item.innerHTML = `
+        <div class="flex items-center gap-2.5 min-w-0 flex-1">
+          <div class="text-2xl shrink-0">${doc.type === 'pdf' ? '📕' : '📜'}</div>
+          <div class="min-w-0 flex-1">
+            <div class="text-xs font-bold text-slate-200 truncate">${doc.name}</div>
+            <div class="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+              <span>Page <b class="text-amber-300">${doc.lastPage || 1}</b> of ${doc.totalPages || 1}</span>
+              <span>•</span>
+              <span class="text-emerald-400">${pct}% complete</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-1 mt-1.5 overflow-hidden">
+              <div class="bg-gradient-to-r from-amber-500 to-orange-500 h-1 rounded-full" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button class="resume-doc-btn bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1">
+            ▶ Resume
+          </button>
+          <button class="delete-doc-btn text-slate-500 hover:text-red-400 p-1.5 rounded-lg transition cursor-pointer text-xs" title="Remove from Library">
+            🗑️
+          </button>
+        </div>
+      `;
+
+      item.querySelector('.resume-doc-btn').onclick = () => resumeDocFromLibrary(doc);
+      item.querySelector('.delete-doc-btn').onclick = (e) => {
+        e.stopPropagation();
+        if (confirm(`Remove "${doc.name}" from your library?`)) {
+          deleteDocFromLibrary(doc.id);
+        }
+      };
+
+      list.appendChild(item);
+    });
+  }
+
+  // Library Toggle Buttons
+  const myLibraryBtnEl = document.getElementById('myLibraryBtn');
+  if (myLibraryBtnEl) {
+    myLibraryBtnEl.onclick = () => {
+      const sec = document.getElementById('librarySection');
+      if (sec) {
+        sec.classList.toggle('hidden');
+        if (!sec.classList.contains('hidden')) {
+          renderLibraryUI();
+          sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    };
+  }
+
+  const closeLibraryBtnEl = document.getElementById('closeLibraryBtn');
+  if (closeLibraryBtnEl) {
+    closeLibraryBtnEl.onclick = () => {
+      document.getElementById('librarySection').classList.add('hidden');
+    };
+  }
+
+  // Initial Library UI render
+  renderLibraryUI();
+
+  // ═══════════════════════════════════════════════════════════════════
   //  FILE PARSING
   // ═══════════════════════════════════════════════════════════════════
   const manualTextInput    = document.getElementById('manualTextInput');
@@ -884,26 +1267,34 @@
     document.getElementById('manualTextContainer').classList.add('hidden');
     pageSelectorWizard.classList.remove('hidden');
 
+    activeDocId = 'doc_' + Date.now();
     const fn = file.name.toLowerCase();
     if (fn.endsWith('.pdf')) {
       currentDocType = 'pdf';
       document.getElementById('docTypeBadge').textContent = 'PDF';
-      pdfDoc = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+      const buf = await file.arrayBuffer();
+      pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
       totalPagesCount = pdfDoc.numPages;
       currentPage = 1;
       updatePageIndicators();
       await renderSelectedPage(1);
+      saveDocToLibrary(activeDocId, file.name, 'pdf', totalPagesCount, 1, buf);
     } else if (fn.endsWith('.docx')) {
       currentDocType = 'docx';
       document.getElementById('docTypeBadge').textContent = 'DOCX';
       pdfDoc = null; currentPageImageB64 = null;
-      const res = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
-      chunkText(res.value || '');
+      const buf = await file.arrayBuffer();
+      const res = await mammoth.extractRawText({ arrayBuffer: buf });
+      const txt = res.value || '';
+      chunkText(txt);
+      saveDocToLibrary(activeDocId, file.name, 'docx', totalPagesCount, 1, txt);
     } else {
       currentDocType = 'txt';
       document.getElementById('docTypeBadge').textContent = 'TXT';
       pdfDoc = null; currentPageImageB64 = null;
-      chunkText(await file.text());
+      const txt = await file.text();
+      chunkText(txt);
+      saveDocToLibrary(activeDocId, file.name, 'txt', totalPagesCount, 1, txt);
     }
     pageSelectorWizard.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
@@ -961,6 +1352,8 @@
   async function renderSelectedPage(num) {
     currentPage = Math.max(1, Math.min(num, totalPagesCount));
     updatePageIndicators();
+    if (activeDocId) updateDocLastPage(activeDocId, currentPage);
+
     if (currentDocType === 'pdf' && pdfDoc) {
       pdfCanvas.classList.remove('hidden'); textDocPreview.classList.add('hidden');
       document.getElementById('scanBadge').textContent = '✅ Visual page ready for AI Vision!';
@@ -977,6 +1370,8 @@
   function renderTextPage(num) {
     currentPage = Math.max(1, Math.min(num, totalPagesCount));
     updatePageIndicators();
+    if (activeDocId) updateDocLastPage(activeDocId, currentPage);
+
     pdfCanvas.classList.add('hidden'); textDocPreview.classList.remove('hidden');
     const txt = docPagesText[currentPage - 1] || '';
     textDocPreview.textContent = txt;
