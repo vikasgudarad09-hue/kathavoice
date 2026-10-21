@@ -245,10 +245,10 @@
       <div>
         <label for="styleSelect" class="block text-xs text-slate-400 mb-1.5 font-semibold">🎙️ Voice & Tone Style:</label>
         <select id="styleSelect" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 transition cursor-pointer">
-          <option value="elder_wisdom" selected>🌿 Wise Elder (Grandparent)</option>
-          <option value="storyteller">🔥 Katha Vachak (Passionate)</option>
-          <option value="best_friend">☕ Chai with Friend (Warm)</option>
-          <option value="philosopher">🧘 Zen Philosopher (Calm)</option>
+          <option value="storyteller" selected>🔥 Katha Vachak (Passionate & Sacred)</option>
+          <option value="acharya">🔱 Acharya (Inspiring Life Mentor)</option>
+          <option value="best_friend">☕ Chai with Friend (Warm & Real)</option>
+          <option value="philosopher">🧘 Zen Philosopher (Calm & Deep)</option>
         </select>
       </div>
     </div>
@@ -1034,10 +1034,10 @@
 
       // 2. Build Gemini prompt — Thorough, line-by-line, emotionally resonant
       const toneGuide = {
-        elder_wisdom: `Speak exactly like a deeply loving elder — a wise grandparent (naani or thatha) — sitting close with boundless warmth and patience. Use gentle pacing, personal heart-felt touches, and timeless simplicity that touches the listener's core.`,
-        storyteller:  `Speak like India's finest Katha Vachak on the village stage at dusk — voice ringing with emotion, deep conviction, and sacred devotion. Let every line come alive with vivid imagery and spiritual fire.`,
-        best_friend:  `Speak like your closest, most trusted friend having a heart-to-heart conversation over hot chai. Casual, honest, warm, and deeply comforting — making ancient wisdom feel completely personal.`,
-        philosopher:  `Speak like a calm zen philosopher at daybreak — peaceful, spacious, deeply profound. Silence between thoughts carries sacred weight, bringing quiet stillness to the listener's heart.`
+        storyteller:  `Speak like a revered, passionate, inspiring Katha Vachak. Your voice is filled with sacred devotion, profound life insight, and spiritual fire. Explain each line so dynamically that the listener feels goosebumps and deep clarity.`,
+        acharya:      `Speak like an enlightened Acharya and life mentor. Deeply insightful, structured, articulate, and practical. Break down every verse with razor-sharp wisdom that dissolves confusion and shows how to live fearlessly today.`,
+        best_friend:  `Speak like your closest, most trusted friend having an honest, real conversation over hot chai. Casual, genuine, warm, and deeply comforting — making ancient wisdom feel completely personal without any preachiness.`,
+        philosopher:  `Speak like a serene zen master and philosopher at dawn — peaceful, spacious, deeply profound. Silence between thoughts carries sacred weight, bringing quiet stillness and peace to the listener's heart.`
       };
 
       const prompt = `You are a revered, deeply loved Indian Katha Vachak (sacred storyteller) explaining sacred texts to seekers.
@@ -1050,7 +1050,7 @@ Include EVERY verse on this page without leaving any line out.
 [SHLOKA_END]
 
 [EXPLANATION_START]
-Now narrate a complete, heart-touching Katha in natural, flowing spoken **${targetLang}** language. ${toneGuide[toneStyle] || toneGuide.elder_wisdom}
+Now narrate a complete, heart-touching Katha in natural, flowing spoken **${targetLang}** language. ${toneGuide[toneStyle] || toneGuide.storyteller}
 
 CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
 1. EXPLAIN EVERY SINGLE LINE — DO NOT SKIP ANYTHING:

@@ -1,6 +1,6 @@
 # 🎧 KathaVoice — Sacred Shloka & Book Explainer
 
-> **Hear sacred shlokas read aloud, then explained in your mother tongue — like a wise elder sitting beside you.**
+> **Hear sacred shlokas read aloud, then explained in your mother tongue — with the fiery passion of a true Katha Vachak.**
 
 [![Live Demo](https://img.shields.io/badge/Live_App-https%3A%2F%2Fstoryvoice--d7219.web.app-amber?style=for-the-badge&logo=firebase)](https://storyvoice-d7219.web.app)
 [![PWA Ready](https://img.shields.io/badge/PWA-Installable_on_All_OS-emerald?style=for-the-badge)](https://storyvoice-d7219.web.app)
@@ -14,7 +14,7 @@ Most people want to understand scriptures like the **Bhagavad Gita, Upanishads, 
 
 **KathaVoice** bridges this gap:
 1. **Reads every verse** in its sacred, original text (Sanskrit, Hindi, Kannada, etc.).
-2. **Explains every line thoroughly** like a loving grandparent or village Katha Vachak in your mother tongue.
+2. **Explains every line thoroughly** like an inspiring Katha Vachak or Acharya in your mother tongue.
 3. **Installs instantly on any device** (Android, Windows, Mac, iPhone) directly from the web link as a Progressive Web App (PWA).
 
 ---
@@ -30,9 +30,9 @@ Most people want to understand scriptures like the **Bhagavad Gita, Upanishads, 
   - 1-tap install on **Android** (Google Chrome, Edge, Samsung Internet).
   - Native window on **Windows PC & Mac**.
   - Guided 2-step **"Add to Home Screen"** on **iPhone & iPad** (iOS Safari).
-- **🎙️ 4 Real Human Storytelling Styles**:
-  - 🌿 *Wise Elder (Naani/Thatha)* — Warm, patient life truths.
-  - 🔥 *Katha Vachak* — Spiritual passion and village stage energy.
+- **🎙️ 4 Inspiring Storytelling Styles**:
+  - 🔥 *Katha Vachak (Default)* — Spiritual passion and sacred conviction.
+  - 🔱 *Acharya / Mentor* — Clear, structured, and practical life wisdom.
   - ☕ *Chai with a Friend* — Casual, relatable conversation.
   - 🧘 *Zen Philosopher* — Serene, quiet reflection.
 
