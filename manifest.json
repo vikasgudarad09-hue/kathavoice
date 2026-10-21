@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "KathaVoice — Sacred Shloka & Book Explainer",
-  "short_name": "KathaVoice",
-  "description": "Sacred shlokas read aloud & explained like a real human storyteller in Kannada, Hindi, English, Tamil, Telugu, Marathi & Sanskrit.",
+  "name": "YourVoice — Sacred Shloka & Book Explainer",
+  "short_name": "YourVoice",
+  "description": "Sacred shlokas read aloud & explained with deep love and life wisdom in your mother tongue with YourVoice.",
   "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",

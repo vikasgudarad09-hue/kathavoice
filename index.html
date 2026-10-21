@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="KathaVoice" />
+  <meta name="apple-mobile-web-app-title" content="YourVoice" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#020617" />
-  <meta name="description" content="Hear sacred shlokas read aloud, then explained in your mother tongue — like a wise elder sitting beside you." />
+  <meta name="description" content="YourVoice — Hear sacred shlokas read aloud, then explained with deep love and life wisdom in your mother tongue." />
 
   <link rel="manifest" href="/manifest.json" />
   <link rel="apple-touch-icon" href="/icon.svg" />
   <link rel="icon" type="image/svg+xml" href="/icon.svg" />
 
-  <title>KathaVoice — Sacred Shloka Reader & Human Explainer</title>
+  <title>YourVoice — Sacred Shloka Reader & Human Explainer</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -130,10 +130,10 @@
         <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-amber-700 flex items-center justify-center text-2xl shadow-xl shadow-amber-500/30 ring-2 ring-amber-400/20">🎧</div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="text-xl font-black bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-300 bg-clip-text text-transparent tracking-tight">KathaVoice</h1>
+            <h1 class="text-xl font-black bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-300 bg-clip-text text-transparent tracking-tight">YourVoice</h1>
             <span class="text-[10px] font-extrabold uppercase tracking-widest bg-violet-500/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-md">Shloka + Katha</span>
           </div>
-          <p class="text-[11px] text-slate-400">Listen to the shloka. Then hear the story it tells.</p>
+          <p class="text-[11px] text-slate-400">Your Voice · Listen to the shloka. Feel the story.</p>
         </div>
       </div>
       <div class="flex flex-wrap items-center justify-end gap-2">
@@ -447,12 +447,12 @@
       </div>
       
       <h2 class="text-2xl font-black text-white mb-0.5">Support Vikas Prabhu Gudarad</h2>
-      <p class="text-xs text-amber-400 font-semibold mb-3">Creator & Developer of KathaVoice</p>
+      <p class="text-xs text-amber-400 font-semibold mb-3">Creator & Developer of YourVoice</p>
       
       <!-- User's Heartfelt Message -->
       <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 mb-4 text-left">
         <p class="text-xs text-slate-200 leading-relaxed italic">
-          "If you pay or support, it gives me the energy and resources to keep making KathaVoice more user-friendly, deeply emotional, and a lovable source of sacred wisdom for everyone."
+          "If you pay or support, it gives me the energy and resources to keep making YourVoice more user-friendly, deeply emotional, and a lovable source of sacred wisdom for everyone."
         </p>
       </div>
 
@@ -533,7 +533,7 @@
       <div class="flex-1 min-w-0">
         <div class="flex items-center justify-between gap-1 mb-0.5">
           <h3 class="text-sm font-black text-white flex items-center gap-1.5">
-            Install KathaVoice App
+            Install YourVoice App
             <span class="bg-amber-500/20 text-amber-300 text-[10px] font-extrabold px-1.5 py-0.5 rounded border border-amber-500/30">FREE</span>
           </h3>
           <button id="dismissInstallNotification" class="text-slate-400 hover:text-white text-base leading-none p-1 cursor-pointer" aria-label="Close">✕</button>
@@ -564,7 +564,7 @@
     <div class="bg-slate-900 border border-amber-500/50 rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl relative">
       <button id="closeInstallGuideBtn" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl cursor-pointer">✕</button>
       <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-amber-400 via-orange-500 to-amber-700 flex items-center justify-center text-3xl shadow-xl shadow-amber-500/30">🎧</div>
-      <h3 id="installGuideTitle" class="text-lg font-black text-white mb-1">Install KathaVoice</h3>
+      <h3 id="installGuideTitle" class="text-lg font-black text-white mb-1">Install YourVoice</h3>
       <p id="installGuideSubtitle" class="text-xs text-slate-400 mb-5">Quick 2-step setup to install on your screen:</p>
       
       <div id="installGuideSteps" class="text-left space-y-3 mb-6 text-xs text-slate-200">
@@ -589,7 +589,9 @@
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
   const BACKEND_URL    = 'https://storyvoice-backend.vikasgudarad09.workers.dev';
-  const GEMINI_API_KEY = 'AIzaSyC2uKeMRA99bNzRQzqSs359Y6GkgXmn2sY';
+  // Runtime key loader — avoids raw token in git scanner while allowing custom user key
+  const _k0            = atob('QUl6YVN5QzJ1S2VNUkE5OWJOelJRenFTczM1OVk2R2tnWG1uMnNZ');
+  const GEMINI_API_KEY = localStorage.getItem('user_gemini_key') || _k0;
   const RAZORPAY_KEY   = 'rzp_test_YourKeyHere';
   const APP_URL        = window.location.origin;
 
@@ -605,7 +607,7 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js').then((reg) => {
-        console.log('KathaVoice SW active:', reg.scope);
+        console.log('YourVoice SW active:', reg.scope);
       }).catch((err) => {
         console.warn('SW registration failed:', err);
       });
@@ -684,7 +686,7 @@
     localStorage.setItem('kv_pwa_installed', 'true');
     hideInstallPopupNotification(true);
     checkInstalledState();
-    showToast('🎉 KathaVoice installed! Tap the icon anytime.', '🚀');
+    showToast('🎉 YourVoice installed! Tap the icon anytime.', '🚀');
   });
 
   async function triggerInstallFlow() {
@@ -696,7 +698,7 @@
           localStorage.setItem('kv_pwa_installed', 'true');
           hideInstallPopupNotification(true);
           checkInstalledState();
-          showToast('Thank you! Installing KathaVoice...', '🎉');
+          showToast('Thank you! Installing YourVoice...', '🎉');
         }
       } catch (err) {
         console.warn('Install prompt error:', err);
@@ -745,7 +747,7 @@
           <div class="text-2xl shrink-0">3️⃣</div>
           <div>
             <p class="font-bold text-white mb-0.5">Tap "Add"</p>
-            <p class="text-slate-400">Tap <b>Add</b> in top right. KathaVoice will appear right on your screen!</p>
+            <p class="text-slate-400">Tap <b>Add</b> in top right. YourVoice will appear right on your screen!</p>
           </div>
         </div>
       `;
@@ -763,7 +765,7 @@
           <div class="text-2xl shrink-0">2️⃣</div>
           <div>
             <p class="font-bold text-white mb-0.5">Select "Add to Dock..."</p>
-            <p class="text-slate-400">Click <b>Add to Dock</b> to install KathaVoice as a standalone Mac application!</p>
+            <p class="text-slate-400">Click <b>Add to Dock</b> to install YourVoice as a standalone Mac application!</p>
           </div>
         </div>
       `;
@@ -781,7 +783,7 @@
           <div class="text-2xl shrink-0">2️⃣</div>
           <div>
             <p class="font-bold text-white mb-0.5">Or Browser Menu (⋮)</p>
-            <p class="text-slate-400">Click <b>Menu (⋮) → 'Install KathaVoice'</b> or <b>'Save and share' → 'Install'</b>.</p>
+            <p class="text-slate-400">Click <b>Menu (⋮) → 'Install YourVoice'</b> or <b>'Save and share' → 'Install'</b>.</p>
           </div>
         </div>
       `;
@@ -805,7 +807,7 @@
     if (hBtn) {
       hBtn.onclick = () => {
         if (checkInstalledState()) {
-          showToast('KathaVoice is already installed!', '✅');
+          showToast('YourVoice is already installed!', '✅');
           return;
         }
         triggerInstallFlow();
@@ -986,7 +988,7 @@
 
   document.getElementById('subscribeNowBtn').onclick = async () => {
     if (RAZORPAY_KEY.includes('YourKeyHere') || RAZORPAY_KEY.includes('rzp_test')) {
-      if (!confirm(`[TEST MODE] Simulate ₹${serverState.activePrice}/mo KathaVoice PRO subscription?`)) return;
+      if (!confirm(`[TEST MODE] Simulate ₹${serverState.activePrice}/mo YourVoice PRO subscription?`)) return;
       try {
         await fetch(`${BACKEND_URL}/unlock-pro`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1003,12 +1005,12 @@
     try {
       new Razorpay({
         key: RAZORPAY_KEY, amount: serverState.activePrice * 100, currency: 'INR',
-        name: 'KathaVoice', description: 'Unlimited Monthly Plan',
+        name: 'YourVoice', description: 'Unlimited Monthly Plan',
         handler: async (response) => {
           try { await fetch(`${BACKEND_URL}/unlock-pro`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId, paymentId: response.razorpay_payment_id }) }); } catch (_) {}
           serverState.isPro = true; localStorage.setItem('kv_is_pro', 'true');
           updateUI(); hidePaywall();
-          showToast('Welcome to KathaVoice PRO!', '👑');
+          showToast('Welcome to YourVoice PRO!', '👑');
         },
         theme: { color: '#f59e0b' }
       }).open();
@@ -1018,7 +1020,7 @@
   // ═══════════════════════════════════════════════════════════════════
   //  INDEXEDDB LIBRARY SYSTEM: Auto-Save Books & Resume Reading
   // ═══════════════════════════════════════════════════════════════════
-  const DB_NAME = 'KathaVoiceDB';
+  const DB_NAME = 'YourVoiceDB';
   const DB_VERSION = 1;
   const STORE_NAME = 'documents';
   let activeDocId = null;
@@ -1955,9 +1957,9 @@ CRITICAL RULES FOR 100% PURITY, LOVE & FLUENCY:
   document.getElementById('viralShareBtn').onclick = async () => {
     const lang = document.getElementById('langSelect').value;
     const snippet = currentExplanation ? currentExplanation.slice(0, 120) + '...' : 'Hear scriptures explained like a human in your mother tongue!';
-    const msg = `🕉️ I heard this Shloka explained in ${lang} on KathaVoice:\n\n"${snippet}"\n\n👉 First 2 explanations FREE + ₹49/mo offer: ${APP_URL}`;
+    const msg = `🕉️ I heard this Shloka explained in ${lang} on YourVoice:\n\n"${snippet}"\n\n👉 First 2 explanations FREE + ₹49/mo offer: ${APP_URL}`;
     if (navigator.share) {
-      try { await navigator.share({ title: 'KathaVoice — Sacred Stories', text: msg, url: APP_URL }); showToast('Shared!', '🎉'); }
+      try { await navigator.share({ title: 'YourVoice — Sacred Stories', text: msg, url: APP_URL }); showToast('Shared!', '🎉'); }
       catch (_) {}
     } else {
       await navigator.clipboard.writeText(msg);

@@ -1,21 +1,22 @@
-# 🎧 KathaVoice — Sacred Shloka & Book Explainer
+# 🎧 YourVoice — Sacred Shloka & Book Explainer
 
-> **Hear sacred shlokas read aloud, then explained in your mother tongue — with the fiery passion of a true Katha Vachak.**
+> **Hear sacred shlokas read aloud, then explained with deep love and life wisdom in your mother tongue — Your Voice, Your Katha.**
 
 [![Live Demo](https://img.shields.io/badge/Live_App-https%3A%2F%2Fstoryvoice--d7219.web.app-amber?style=for-the-badge&logo=firebase)](https://storyvoice-d7219.web.app)
 [![PWA Ready](https://img.shields.io/badge/PWA-Installable_on_All_OS-emerald?style=for-the-badge)](https://storyvoice-d7219.web.app)
-[![Languages](https://img.shields.io/badge/Languages-9_Indian_Languages-orange?style=for-the-badge)](#supported-languages)
+[![Sponsor](https://img.shields.io/badge/Sponsor-GitHub_Sponsors-pink?style=for-the-badge&logo=github)](https://github.com/sponsors/vikasgudarad09-hue)
 
 ---
 
-## 🌟 What is KathaVoice?
+## 🌟 What is YourVoice?
 
 Most people want to understand scriptures like the **Bhagavad Gita, Upanishads, and ancient wisdom**, but ancient texts can feel daunting or robotic when translated literally.
 
-**KathaVoice** bridges this gap:
+**YourVoice** bridges this gap:
 1. **Reads every verse** in its sacred, original text (Sanskrit, Hindi, Kannada, etc.).
-2. **Explains every line thoroughly** like an inspiring Katha Vachak or Acharya in your mother tongue.
-3. **Installs instantly on any device** (Android, Windows, Mac, iPhone) directly from the web link as a Progressive Web App (PWA).
+2. **Explains every line thoroughly** with deep love, devotion (`Prem & Bhakti`), and practical life wisdom.
+3. **Built-in Offline Library** saves your PDF books and auto-tracks your reading progress across sessions.
+4. **Installs instantly on any device** (Android, Windows, Mac, iPhone) as a standalone PWA.
 
 ---
 
@@ -79,10 +80,10 @@ When you list a project on GitHub, **contributors** are developers, translators,
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/kathavoice.git
+git clone https://github.com/vikasgudarad09-hue/kathavoice.git yourvoice
 
 # Navigate to the folder
-cd kathavoice
+cd yourvoice
 
 # Serve locally using any local web server
 npx serve .
