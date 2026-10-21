@@ -1,9 +1,14 @@
 {
   "hosting": {
+    "site": "storyvoice-d7219",
     "public": ".",
     "ignore": [
       "firebase.json",
       "**/.*",
+      ".git/**",
+      "**/.git/**",
+      "README.md",
+      "*.txt",
       "**/node_modules/**"
     ],
     "headers": [
