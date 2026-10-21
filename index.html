@@ -224,31 +224,31 @@
       <div>
         <label for="flowModeSelect" class="block text-xs text-slate-400 mb-1.5 font-semibold">🎧 Voice Mode:</label>
         <select id="flowModeSelect" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2.5 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-500 transition cursor-pointer">
-          <option value="explain_only" selected>✨ Katha Only (Fluent & Complete)</option>
-          <option value="shloka_first">📜 Shloka First + Katha</option>
+          <option value="explain_only" selected>✨ Heart Katha (Pure Meaning & Story)</option>
+          <option value="shloka_first">📜 Sacred Shloka First → Heart Katha</option>
         </select>
       </div>
       <div>
         <label for="langSelect" class="block text-xs text-slate-400 mb-1.5 font-semibold">🌐 Explain in Language:</label>
         <select id="langSelect" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 transition cursor-pointer">
           <option value="English" data-lang="en-IN" data-short="en">English — Storytelling</option>
-          <option value="Kannada" data-lang="kn-IN" data-short="kn">ಕನ್ನಡ — ಸಹಜ ಕಥೆ</option>
-          <option value="Hindi" data-lang="hi-IN" data-short="hi">हिन्दी — दिल की बात</option>
-          <option value="Telugu" data-lang="te-IN" data-short="te">తెలుగు — కథనం</option>
-          <option value="Tamil" data-lang="ta-IN" data-short="ta">தமிழ் — கதை</option>
-          <option value="Marathi" data-lang="mr-IN" data-short="mr">मराठी — भावकथन</option>
-          <option value="Bengali" data-lang="bn-IN" data-short="bn">বাংলা — গল্পকথন</option>
-          <option value="Gujarati" data-lang="gu-IN" data-short="gu">ગુજરાતી — વાર્તા</option>
-          <option value="Malayalam" data-lang="ml-IN" data-short="ml">മലയാളം — കഥ</option>
+          <option value="Kannada" data-lang="kn-IN" data-short="kn">ಕನ್ನಡ — ಸಹಜ ಪ್ರೀತಿಯ ಕಥೆ</option>
+          <option value="Hindi" data-lang="hi-IN" data-short="hi">हिन्दी — प्रेम व भक्ति कथा</option>
+          <option value="Telugu" data-lang="te-IN" data-short="te">తెలుగు — అనురాగ కథనం</option>
+          <option value="Tamil" data-lang="ta-IN" data-short="ta">தமிழ் — அன்புக் கதை</option>
+          <option value="Marathi" data-lang="mr-IN" data-short="mr">मराठी — भावपूर्ण कथा</option>
+          <option value="Bengali" data-lang="bn-IN" data-short="bn">বাংলা — হৃদয়স্পর্শী গল্প</option>
+          <option value="Gujarati" data-lang="gu-IN" data-short="gu">ગુજરાતી — પ્રેમાળ વાર્તા</option>
+          <option value="Malayalam" data-lang="ml-IN" data-short="ml">മലയാളം — സ്നേഹ കഥ</option>
         </select>
       </div>
       <div>
-        <label for="styleSelect" class="block text-xs text-slate-400 mb-1.5 font-semibold">🎙️ Voice & Tone Style:</label>
+        <label for="styleSelect" class="block text-xs text-slate-400 mb-1.5 font-semibold">🎙️ Voice & Emotion Style:</label>
         <select id="styleSelect" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 transition cursor-pointer">
-          <option value="storyteller" selected>🔥 Katha Vachak (Passionate & Sacred)</option>
-          <option value="acharya">🔱 Acharya (Inspiring Life Mentor)</option>
-          <option value="best_friend">☕ Chai with Friend (Warm & Real)</option>
-          <option value="philosopher">🧘 Zen Philosopher (Calm & Deep)</option>
+          <option value="storyteller" selected>💖 Prem & Bhakti (Warm, Loving & Devotional)</option>
+          <option value="acharya">🔱 Acharya (Loving Guide & Wise Mentor)</option>
+          <option value="best_friend">☕ Soul Friend (Deeply Caring & Warm)</option>
+          <option value="philosopher">🕊️ Shanti & Karuna (Calm, Tender & Peaceful)</option>
         </select>
       </div>
     </div>
@@ -259,43 +259,22 @@
       <span id="explainBtnText">Explain Every Line of This Page</span>
     </button>
 
-    <!-- Output Card (Hidden until AI responds) -->
+    <!-- Unified Output Section (Single Card Experience) -->
     <section id="outputCard" class="hidden mb-6">
-
-      <!-- Phase 1: Shloka Reading Block -->
-      <div id="shlokaCard" class="hidden bg-slate-900/90 border border-amber-500/50 rounded-2xl p-5 mb-3 shadow-xl shadow-amber-500/10 transition-all">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2">
-            <div id="shlokaEQ" class="flex items-end h-5 gap-0.5">
-              <span class="eq-bar" style="height:4px"></span>
-              <span class="eq-bar" style="height:7px"></span>
-              <span class="eq-bar" style="height:4px"></span>
-              <span class="eq-bar" style="height:7px"></span>
-              <span class="eq-bar" style="height:4px"></span>
-            </div>
-            <span class="text-xs font-black uppercase tracking-widest text-amber-400">📜 Original Shloka / Passage</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <button id="skipShlokaBtn" class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 transition cursor-pointer">⏩ Skip to Meaning</button>
-            <span id="shlokaStatusBadge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">Now Reading</span>
-          </div>
-        </div>
-        <div id="shlokaText" class="shloka-text text-slate-100 text-[1.05rem] leading-loose bg-slate-950/70 p-4 rounded-xl border border-amber-500/20 shloka-block select-none"></div>
-      </div>
-
-      <!-- Phase 2: Human Explanation Card -->
-      <div id="explanationCard" class="hidden bg-slate-900/90 border border-emerald-500/30 rounded-2xl p-5 shadow-xl shadow-emerald-500/5 transition-all">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-3 border-b border-slate-800">
+      <div id="unifiedKathaCard" class="bg-slate-900/95 border border-amber-500/40 rounded-2xl p-5 shadow-2xl shadow-amber-500/10 transition-all">
+        
+        <!-- Header: Status, EQ, Page Badge, Share -->
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-800">
           <div class="flex items-center gap-2.5">
-            <div id="explanationEQ" class="flex items-end h-5 gap-0.5">
-              <span class="eq-bar" style="height:4px;background:linear-gradient(to top, #34d399, #059669)"></span>
-              <span class="eq-bar" style="height:7px;background:linear-gradient(to top, #34d399, #059669)"></span>
-              <span class="eq-bar" style="height:4px;background:linear-gradient(to top, #34d399, #059669)"></span>
-              <span class="eq-bar" style="height:7px;background:linear-gradient(to top, #34d399, #059669)"></span>
-              <span class="eq-bar" style="height:4px;background:linear-gradient(to top, #34d399, #059669)"></span>
+            <div id="kathaEQ" class="flex items-end h-5 gap-0.5">
+              <span class="eq-bar" style="height:4px;background:linear-gradient(to top, #f59e0b, #ef4444)"></span>
+              <span class="eq-bar" style="height:8px;background:linear-gradient(to top, #f59e0b, #ef4444)"></span>
+              <span class="eq-bar" style="height:5px;background:linear-gradient(to top, #f59e0b, #ef4444)"></span>
+              <span class="eq-bar" style="height:8px;background:linear-gradient(to top, #f59e0b, #ef4444)"></span>
+              <span class="eq-bar" style="height:4px;background:linear-gradient(to top, #f59e0b, #ef4444)"></span>
             </div>
             <div>
-              <span id="speakingStatus" class="text-xs font-black uppercase tracking-widest text-emerald-400">💡 Human Heart Explanation</span>
+              <span id="speakingStatus" class="text-xs font-black uppercase tracking-widest text-amber-400">🎙️ Heart Katha Experience</span>
               <div id="speakingProgress" class="text-[11px] text-slate-400">Ready to play</div>
             </div>
           </div>
@@ -305,7 +284,24 @@
           </div>
         </div>
 
-        <!-- Karaoke Text -->
+        <!-- Optional Original Verse Reference (Unified compact box inside same card) -->
+        <div id="shlokaBox" class="hidden mb-4 bg-slate-950/80 border border-amber-500/30 rounded-xl p-3.5 transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-black uppercase tracking-wider text-amber-400">📜 Original Sacred Verse</span>
+              <span id="shlokaStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">Reference</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="skipShlokaBtn" class="hidden text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 transition cursor-pointer">⏩ Skip to Meaning</button>
+              <button id="toggleShlokaBtn" class="text-[11px] text-slate-400 hover:text-amber-300 transition cursor-pointer flex items-center gap-1">
+                <span id="toggleShlokaText">Hide Verse</span> ▾
+              </button>
+            </div>
+          </div>
+          <div id="shlokaText" class="shloka-text text-amber-100/90 text-sm leading-relaxed max-h-36 overflow-y-auto select-none border-t border-slate-800/80 pt-2 font-serif"></div>
+        </div>
+
+        <!-- Karaoke Heart Katha Script -->
         <div class="mb-4">
           <div class="flex items-center justify-between text-[11px] text-slate-400 mb-1.5 px-1">
             <span>💬 Tap any sentence to jump audio there:</span>
@@ -314,7 +310,7 @@
               <button id="increaseFontBtn" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 font-bold text-xs transition">A+</button>
             </div>
           </div>
-          <div id="humanScript" class="text-slate-100 text-base leading-relaxed bg-slate-950/70 p-4 rounded-xl border border-slate-800/80 shadow-inner max-h-72 overflow-y-auto"></div>
+          <div id="humanScript" class="text-slate-100 text-base leading-relaxed bg-slate-950/80 p-4 rounded-xl border border-slate-800/80 shadow-inner max-h-80 overflow-y-auto"></div>
         </div>
 
         <!-- Progress Bar -->
@@ -326,7 +322,7 @@
         <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex flex-wrap items-center gap-2">
-              <button id="playBtn" class="bg-amber-500 hover:bg-amber-400 text-black font-black px-4 py-2 rounded-lg text-sm transition cursor-pointer shadow-md shadow-amber-500/25 flex items-center gap-1.5">
+              <button id="playBtn" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-black font-black px-4 py-2 rounded-lg text-sm transition cursor-pointer shadow-md shadow-amber-500/25 flex items-center gap-1.5">
                 ▶ Listen Again
               </button>
               <button id="pauseResumeBtn" class="bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/50 text-amber-300 font-bold px-4 py-2 rounded-lg text-sm transition cursor-pointer">
@@ -1032,39 +1028,46 @@
         if (td.trialsRemaining !== undefined) { serverState.trialsRemaining = td.trialsRemaining; updateUI(); }
       } catch (_) {}
 
-      // 2. Build Gemini prompt — Thorough, line-by-line, emotionally resonant
+      // 2. Build Gemini prompt — Deeply loving, 100% pure target language, line-by-line wisdom
       const toneGuide = {
-        storyteller:  `Speak like a revered, passionate, inspiring Katha Vachak. Your voice is filled with sacred devotion, profound life insight, and spiritual fire. Explain each line so dynamically that the listener feels goosebumps and deep clarity.`,
-        acharya:      `Speak like an enlightened Acharya and life mentor. Deeply insightful, structured, articulate, and practical. Break down every verse with razor-sharp wisdom that dissolves confusion and shows how to live fearlessly today.`,
-        best_friend:  `Speak like your closest, most trusted friend having an honest, real conversation over hot chai. Casual, genuine, warm, and deeply comforting — making ancient wisdom feel completely personal without any preachiness.`,
-        philosopher:  `Speak like a serene zen master and philosopher at dawn — peaceful, spacious, deeply profound. Silence between thoughts carries sacred weight, bringing quiet stillness and peace to the listener's heart.`
+        storyteller:  `Speak with immense love, deep tenderness, and soulful warmth (Preethi, Bhakti, and Sneha Bhava). Let your voice feel like an affectionate mother or revered guru embracing their dearest child. Melt all anxiety, heal past sorrow, and fill the listener's heart with peace, hope, comfort, and divine love.`,
+        acharya:      `Speak like an enlightened Acharya and loving life mentor. Warm, deeply compassionate, articulate, and practical. Break down every line with loving clarity that dissolves fear and inspires peaceful living today.`,
+        best_friend:  `Speak like your dearest soul friend having a heartfelt conversation over hot chai. Unconditionally loving, honest, warm, soothing, and real — making timeless spiritual wisdom feel deeply intimate and personal.`,
+        philosopher:  `Speak like a serene, compassionate sage at dawn. Peaceful, spacious, profoundly loving, and gentle — bringing stillness, gratitude, and sublime peace to the soul.`
       };
 
-      const prompt = `You are a revered, deeply loved Indian Katha Vachak (sacred storyteller) explaining sacred texts to seekers.
+      const prompt = `You are a revered, deeply loved Indian Katha Vachak explaining sacred texts to seekers with profound warmth, love, and spiritual depth.
 
 Your response MUST have TWO PARTS clearly marked:
 
 [SHLOKA_START]
-Carefully read the attached image or text. Extract and write out ALL the original shlokas, verses, or lines from this page in their EXACT original script (Sanskrit/Devanagari, Kannada, etc.). 
-Include EVERY verse on this page without leaving any line out.
+Carefully extract and write out the original sacred verses or text found on this page in their original script (Sanskrit/Devanagari, Prakrit, etc.).
+Do not add any explanation or English translation here. Only the pure original verses.
 [SHLOKA_END]
 
 [EXPLANATION_START]
-Now narrate a complete, heart-touching Katha in natural, flowing spoken **${targetLang}** language. ${toneGuide[toneStyle] || toneGuide.storyteller}
+Narrate a complete, heart-touching, deeply loving Katha in natural, flowing spoken **${targetLang}**. ${toneGuide[toneStyle] || toneGuide.storyteller}
 
-CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
-1. EXPLAIN EVERY SINGLE LINE — DO NOT SKIP ANYTHING:
-   - Walk through the entire page from top to bottom.
-   - Address EVERY verse, every line, and every concept on the page. Do NOT summarize or skip ahead.
-   - For each part, explain the literal meaning AND the psychological life secret hidden inside it.
-2. PURE SPOKEN HUMAN VOICE — NO DECORATIVE LINES:
-   - Speak in natural, fluent, spoken ${targetLang}.
-   - Absolutely DO NOT output decorative lines (like ===, ---, or ═══), equal signs, bullet points, quotation marks, asterisks, or markdown lines.
-   - Write in flowing, natural paragraphs with clean pauses.
-3. REAL LIFE RELEVANCE:
-   - Connect the wisdom directly to modern life — worry, work, relationships, duty, anger, peace, and surrender.
-4. TIMELESS BENEDICTION:
-   - Conclude with a warm, memorable life takeaway and blessing that comforts the listener's heart.
+CRITICAL RULES FOR 100% PURITY, LOVE & FLUENCY:
+1. STRICT TARGET LANGUAGE PURITY — ABSOLUTELY ZERO ENGLISH WORDS:
+   - Speak 100% in pure ${targetLang}.
+   - ABSOLUTELY ZERO English words, zero transliterated English jargon (never write words like 'fragmentary', 'concept', 'system', 'point', 'duty' in English or Latin script). Use rich, natural, authentic native vocabulary of ${targetLang} only.
+   - Write 100% in authentic ${targetLang} script. Never mix scripts.
+   - Ignore any random OCR noise, isolated letters (like 'Fd', 'r'), page numbers, or publishers' marks.
+
+2. NEVER DUPLICATE THE SHLOKA HERE:
+   - DO NOT copy, quote, or repeat the Sanskrit verses inside this explanation.
+   - Do NOT say "here is the shloka" or write the verse lines again.
+   - The listener already has the verse above. Your job here is ONLY to narrate the story, explain every single line in depth, and reveal the emotional & life wisdom.
+
+3. EXPLAIN EVERY LINE WITH DEEP EMOTION & LOVE (PREETHI / BHAKTI / SNEHA):
+   - Walk through the entire passage from beginning to end without skipping anything.
+   - Explain both the literal meaning and the deep psychological life wisdom.
+   - Speak with immense love, tenderness, and heartfelt care. Talk directly to the listener as your most cherished soul. Make them feel comforted, uplifted, and deeply loved.
+
+4. PURE SPOKEN HUMAN VOICE — NO SYMBOLS OR DECORATIVE LINES:
+   - Absolutely DO NOT output decorative lines (such as ===, ---, ═══, ───), markdown dividing lines, bullet points, asterisks, or quotation marks.
+   - Write in flowing, natural spoken sentences with clean punctuation so the voice flows naturally.
 [EXPLANATION_END]`;
 
       const parts = [];
@@ -1112,41 +1115,42 @@ CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
       const shlokaMatch = rawResponse.match(/\[SHLOKA_START\]([\s\S]*?)\[SHLOKA_END\]/);
       const explainMatch = rawResponse.match(/\[EXPLANATION_START\]([\s\S]*?)\[EXPLANATION_END\]/);
 
-      currentShlokaText  = cleanTextOutput(shlokaMatch ? shlokaMatch[1] : '');
-      currentExplanation = cleanTextOutput(explainMatch ? explainMatch[1] : rawResponse);
+      currentShlokaText  = cleanTextOutput(shlokaMatch ? shlokaMatch[1] : '', targetLang);
+      currentExplanation = cleanTextOutput(explainMatch ? explainMatch[1] : rawResponse, targetLang);
 
       // Fallback if AI didn't use delimiters
       if (!shlokaMatch && !explainMatch) {
         const lines = rawResponse.trim().split('\n\n');
         if (lines.length >= 2) {
-          currentShlokaText  = cleanTextOutput(lines.slice(0, Math.ceil(lines.length / 3)).join('\n\n'));
-          currentExplanation = cleanTextOutput(lines.slice(Math.ceil(lines.length / 3)).join('\n\n'));
+          currentShlokaText  = cleanTextOutput(lines.slice(0, Math.ceil(lines.length / 3)).join('\n\n'), targetLang);
+          currentExplanation = cleanTextOutput(lines.slice(Math.ceil(lines.length / 3)).join('\n\n'), targetLang);
         } else {
-          currentShlokaText  = cleanTextOutput(textContent || '');
-          currentExplanation = cleanTextOutput(rawResponse);
+          currentShlokaText  = cleanTextOutput(textContent || '', targetLang);
+          currentExplanation = cleanTextOutput(rawResponse, targetLang);
         }
       }
 
-      // 5. Render UI
+      // Eliminate any duplicate shloka that might have leaked into the explanation
+      currentExplanation = removeDuplicatedShlokaFromExplanation(currentExplanation, currentShlokaText);
+
+      // 5. Render Single Unified Player Card
       document.getElementById('currentPageReadingBadge').textContent = `Page ${currentPage} of ${totalPagesCount}`;
 
       const flowMode = document.getElementById('flowModeSelect')?.value || 'explain_only';
-      const shlokaCard = document.getElementById('shlokaCard');
+      const shlokaBox = document.getElementById('shlokaBox');
 
       if (currentShlokaText) {
         document.getElementById('shlokaText').textContent = currentShlokaText;
-        shlokaCard.classList.remove('hidden');
-        document.getElementById('shlokaStatusBadge').textContent = (flowMode === 'shloka_first') ? '🔊 Reading Now' : '📖 Original Verse';
+        if (shlokaBox) shlokaBox.classList.remove('hidden');
+        document.getElementById('shlokaStatusBadge').textContent = (flowMode === 'shloka_first') ? '🔊 Reading Verse' : '📖 Sacred Verse';
         const skipBtn = document.getElementById('skipShlokaBtn');
         if (skipBtn) skipBtn.classList.toggle('hidden', flowMode !== 'shloka_first');
       } else {
-        shlokaCard.classList.add('hidden');
+        if (shlokaBox) shlokaBox.classList.add('hidden');
       }
 
-      // Show explanation card with karaoke
-      const explanationCard = document.getElementById('explanationCard');
+      // Render karaoke script into unified player
       renderKaraokeScript(currentExplanation);
-      explanationCard.classList.remove('hidden');
 
       document.getElementById('outputCard').classList.remove('hidden');
       document.getElementById('outputCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1177,6 +1181,21 @@ CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
     };
   }
 
+  const toggleShlokaBtnEl = document.getElementById('toggleShlokaBtn');
+  if (toggleShlokaBtnEl) {
+    toggleShlokaBtnEl.onclick = () => {
+      const txt = document.getElementById('shlokaText');
+      const label = document.getElementById('toggleShlokaText');
+      if (txt.classList.contains('hidden')) {
+        txt.classList.remove('hidden');
+        if (label) label.textContent = 'Hide Verse';
+      } else {
+        txt.classList.add('hidden');
+        if (label) label.textContent = 'Show Verse';
+      }
+    };
+  }
+
   // ═══════════════════════════════════════════════════════════════════
   //  AUDIO ENGINE: Fluent Shloka Recitation + Complete Katha Explanation
   // ═══════════════════════════════════════════════════════════════════
@@ -1192,6 +1211,15 @@ CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
       .trim();
   }
 
+  function setEQSpeaking(speaking) {
+    const eq = document.getElementById('kathaEQ');
+    if (eq) eq.classList.toggle('speaking', !!speaking);
+    const old1 = document.getElementById('shlokaEQ');
+    if (old1) old1.classList.toggle('speaking', !!speaking);
+    const old2 = document.getElementById('explanationEQ');
+    if (old2) old2.classList.toggle('speaking', !!speaking);
+  }
+
   function startTwoPhaseAudio() {
     stopAllAudio();
     if (!currentShlokaText && !currentExplanation) return;
@@ -1200,13 +1228,12 @@ CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
     isPlaying = true; isPaused = false;
 
     if (flowMode === 'explain_only' || !currentShlokaText) {
-      // Direct Heart Katha mode (Fluent, complete, natural mother tongue)
+      // Direct Heart Katha mode (Fluent, complete, loving mother tongue)
       audioPhase = 'explanation';
       showShlokaPhase(false);
-      document.getElementById('speakingStatus').textContent = '🎙️ Explaining every line in detail...';
-      document.getElementById('speakingProgress').textContent = 'Complete Katha';
-      document.getElementById('explanationEQ').classList.add('speaking');
-      document.getElementById('shlokaEQ').classList.remove('speaking');
+      document.getElementById('speakingStatus').textContent = '🎙️ Explaining with Love & Wisdom...';
+      document.getElementById('speakingProgress').textContent = 'Heart Katha';
+      setEQSpeaking(true);
       speechChunks = splitIntoChunks(currentExplanation);
       currentChunkIndex = 0;
       updateProgressBar(0, speechChunks.length);
@@ -1215,10 +1242,9 @@ CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
       // Shloka first mode
       audioPhase = 'shloka';
       showShlokaPhase(true);
-      document.getElementById('speakingStatus').textContent = '📜 Reading the Shloka aloud...';
-      document.getElementById('speakingProgress').textContent = 'Phase 1 of 2';
-      document.getElementById('shlokaEQ').classList.add('speaking');
-      document.getElementById('explanationEQ').classList.remove('speaking');
+      document.getElementById('speakingStatus').textContent = '📜 Reading Sacred Verse...';
+      document.getElementById('speakingProgress').textContent = 'Phase 1: Sacred Verse';
+      setEQSpeaking(true);
 
       const cleanShloka = cleanShlokaTextForSpeech(currentShlokaText);
       speechChunks = splitIntoChunks(cleanShloka);
@@ -1229,9 +1255,8 @@ CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
   }
 
   function onShlokaPhaseComplete() {
-    document.getElementById('speakingStatus').textContent = '💡 Now explaining every line in detail...';
-    document.getElementById('speakingProgress').textContent = 'Phase 2 of 2';
-    document.getElementById('shlokaEQ').classList.remove('speaking');
+    document.getElementById('speakingStatus').textContent = '💖 Explaining Every Line in Love...';
+    document.getElementById('speakingProgress').textContent = 'Phase 2: Heart Katha';
     showShlokaPhase(false);
 
     setTimeout(() => {
@@ -1239,10 +1264,10 @@ CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
       audioPhase = 'explanation';
       speechChunks = splitIntoChunks(currentExplanation);
       currentChunkIndex = 0;
-      document.getElementById('explanationEQ').classList.add('speaking');
+      setEQSpeaking(true);
       updateProgressBar(0, speechChunks.length);
       playNextChunkInPhase();
-    }, 1200);
+    }, 1000);
   }
 
   function onExplanationPhaseComplete() {
@@ -1250,8 +1275,8 @@ CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
     audioPhase = 'idle';
     document.getElementById('speakingStatus').textContent = '✅ Katha Complete';
     document.getElementById('speakingProgress').textContent = 'Tap ↺ to hear again';
-    document.getElementById('explanationEQ').classList.remove('speaking');
-    document.getElementById('shlokaEQ').classList.remove('speaking');
+    setEQSpeaking(false);
+    showShlokaPhase(false);
     document.querySelectorAll('.k-sent').forEach(el => el.classList.remove('active'));
     updateProgressBar(speechChunks.length, speechChunks.length);
     showToast('Katha complete 🙏 Tap "Next Page" to continue!', '🕉️');
@@ -1338,18 +1363,53 @@ CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
     return sel.options[sel.selectedIndex].dataset.lang || 'en-IN';
   }
 
-  function cleanTextOutput(str) {
+  function cleanTextOutput(str, targetLang) {
     if (!str) return '';
-    return str
-      // Remove all divider lines (═══, ===, ---, ___, ~~~)
-      .replace(/[═=─\-_~]{2,}/g, '')
+    let cleaned = str
+      // Remove all divider lines (═══, ===, ---, ___, ~~~) and box-drawing chars
+      .replace(/[\u2500-\u257F═=─\-_~]{2,}/g, '')
       // Remove lines or prefixes consisting solely of punctuation/symbols
       .replace(/^[=\-—_═*#\s\.\,\:\;]+/gm, '')
       .replace(/[=\-—_═*#\s\.\,\:\;]+$/gm, '')
       // Remove all quotation marks & markdown
       .replace(/["'“”‘’«»„‟`*#]/g, '')
+      // Remove zero-width joiners / broken unicode
+      .replace(/[\u200B-\u200D\uFEFF]/g, '')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
+
+    // If target language is non-English, clean stray OCR Latin fragments (e.g. standalone "Fd", "r", or Latin attached to syllables)
+    if (targetLang && targetLang !== 'English') {
+      cleaned = cleaned.replace(/(?<=[^\x00-\x7F\s]|^)[A-Za-z]{1,3}(?=[^\x00-\x7F\s]|\s|[.,!?]|$)/g, '');
+      cleaned = cleaned.replace(/\s+[A-Za-z]{1,2}(?=\s|[.,!?]|$)/g, '');
+    }
+
+    return cleaned;
+  }
+
+  function removeDuplicatedShlokaFromExplanation(explanation, shloka) {
+    if (!explanation || !shloka) return explanation;
+    const shlokaWords = shloka.split(/[\s,।॥\n]+/).map(w => w.trim()).filter(w => w.length >= 4);
+    if (shlokaWords.length === 0) return explanation;
+
+    const sentences = explanation.split(/(?<=[.?!।॥\n])\s+/);
+    const filtered = sentences.filter(sent => {
+      const s = sent.trim();
+      // Drop common AI preamble lines introducing the shloka verbatim
+      if (/^(ಆ ಸುಂದರವಾದ ಶ್ಲೋಕ ಇಲ್ಲಿದೆ|ಶ್ಲೋಕ ಇಲ್ಲಿದೆ|ಇಲ್ಲಿದೆ ಆ ಶ್ಲೋಕ|ಇಲ್ಲಿರುವ ಶ್ಲೋಕ|ಇಲ್ಲಿ ಆ ಶ್ಲೋಕ|यहाँ वह श्लोक है|यहाँ यह सुंदर श्लोक है|इस श्लोक में|here is the shloka|the shloka is as follows)/i.test(s)) {
+        return false;
+      }
+      let matchCount = 0;
+      for (const sw of shlokaWords) {
+        if (s.includes(sw)) matchCount++;
+      }
+      if (shlokaWords.length >= 3 && matchCount >= Math.min(3, Math.ceil(shlokaWords.length * 0.4))) {
+        return false; // Verbatim duplicate of the shloka!
+      }
+      return true;
+    });
+
+    return filtered.join(' ').replace(/\s+/g, ' ').trim();
   }
 
   function splitIntoChunks(text) {
@@ -1381,11 +1441,20 @@ CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
   }
 
   function showShlokaPhase(on) {
-    const card = document.getElementById('shlokaCard');
-    if (on) card.classList.add('reading-shloka-phase');
-    else card.classList.remove('reading-shloka-phase');
+    const box = document.getElementById('shlokaBox');
+    if (box) {
+      if (on) {
+        box.classList.add('border-amber-400', 'ring-1', 'ring-amber-400/40', 'reading-shloka-phase');
+        box.classList.remove('border-amber-500/30');
+      } else {
+        box.classList.remove('border-amber-400', 'ring-1', 'ring-amber-400/40', 'reading-shloka-phase');
+        box.classList.add('border-amber-500/30');
+      }
+    }
     const badge = document.getElementById('shlokaStatusBadge');
-    if (badge) badge.textContent = on ? '🔊 Reading Now' : '✅ Done';
+    if (badge) badge.textContent = on ? '🔊 Reading Verse' : '📖 Sacred Verse';
+    const skipBtn = document.getElementById('skipShlokaBtn');
+    if (skipBtn) skipBtn.classList.toggle('hidden', !on);
   }
 
   function updateProgressBar(current, total) {
@@ -1408,10 +1477,8 @@ CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
     document.getElementById('speakingStatus').textContent = '⏹ Stopped';
     document.getElementById('speakingProgress').textContent = 'Ready to play';
     document.getElementById('progressBar').style.width = '0%';
-    document.getElementById('shlokaEQ').classList.remove('speaking');
-    document.getElementById('explanationEQ').classList.remove('speaking');
-    document.getElementById('shlokaCard').classList.remove('reading-shloka-phase');
-    document.getElementById('shlokaStatusBadge').textContent = 'Now Reading';
+    setEQSpeaking(false);
+    showShlokaPhase(false);
     document.getElementById('pauseResumeBtn').textContent = '⏸ Pause';
     document.querySelectorAll('.k-sent').forEach(el => el.classList.remove('active'));
   }
@@ -1448,7 +1515,7 @@ CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
       if (window.speechSynthesis) window.speechSynthesis.cancel();
       audioPhase = 'explanation';
       speechChunks = splitIntoChunks(currentExplanation);
-      document.getElementById('explanationEQ').classList.add('speaking');
+      setEQSpeaking(true);
       showShlokaPhase(false);
     }
     currentChunkIndex = Math.max(0, Math.min(index, speechChunks.length - 1));
@@ -1473,12 +1540,10 @@ CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
       if (window.speechSynthesis) window.speechSynthesis.pause();
       document.getElementById('speakingStatus').textContent = '⏸ Paused';
       document.getElementById('pauseResumeBtn').textContent = '▶ Resume';
-      document.getElementById('shlokaEQ').classList.remove('speaking');
-      document.getElementById('explanationEQ').classList.remove('speaking');
+      setEQSpeaking(false);
     } else {
       document.getElementById('pauseResumeBtn').textContent = '⏸ Pause';
-      if (audioPhase === 'shloka') document.getElementById('shlokaEQ').classList.add('speaking');
-      if (audioPhase === 'explanation') document.getElementById('explanationEQ').classList.add('speaking');
+      setEQSpeaking(true);
       audioPlayer.play().catch(() => playNextChunkInPhase());
       if (window.speechSynthesis) window.speechSynthesis.resume();
     }
