@@ -1044,16 +1044,12 @@
 
 Your response MUST have TWO PARTS clearly marked:
 
-══════════════════════════
-PART 1 — [SHLOKA_START]
-══════════════════════════
+[SHLOKA_START]
 Carefully read the attached image or text. Extract and write out ALL the original shlokas, verses, or lines from this page in their EXACT original script (Sanskrit/Devanagari, Kannada, etc.). 
 Include EVERY verse on this page without leaving any line out.
-End this section with: [SHLOKA_END]
+[SHLOKA_END]
 
-══════════════════════════
-PART 2 — [EXPLANATION_START]
-══════════════════════════
+[EXPLANATION_START]
 Now narrate a complete, heart-touching Katha in natural, flowing spoken **${targetLang}** language. ${toneGuide[toneStyle] || toneGuide.elder_wisdom}
 
 CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
@@ -1061,15 +1057,15 @@ CRITICAL MANDATE — ABSOLUTE COMPLETENESS & FLUENCY:
    - Walk through the entire page from top to bottom.
    - Address EVERY verse, every line, and every concept on the page. Do NOT summarize or skip ahead.
    - For each part, explain the literal meaning AND the psychological life secret hidden inside it.
-2. PURE SPOKEN HUMAN VOICE:
+2. PURE SPOKEN HUMAN VOICE — NO DECORATIVE LINES:
    - Speak in natural, fluent, spoken ${targetLang}.
-   - Do NOT use bullet points, asterisks (*), markdown formatting, hashtags, or numbered lists.
-   - Use natural flowing paragraphs with pauses so it sounds like a real person talking from the heart.
+   - Absolutely DO NOT output decorative lines (like ===, ---, or ═══), equal signs, bullet points, quotation marks, asterisks, or markdown lines.
+   - Write in flowing, natural paragraphs with clean pauses.
 3. REAL LIFE RELEVANCE:
    - Connect the wisdom directly to modern life — worry, work, relationships, duty, anger, peace, and surrender.
 4. TIMELESS BENEDICTION:
    - Conclude with a warm, memorable life takeaway and blessing that comforts the listener's heart.
-End this section with: [EXPLANATION_END]`;
+[EXPLANATION_END]`;
 
       const parts = [];
       if (textContent) {
@@ -1116,18 +1112,18 @@ End this section with: [EXPLANATION_END]`;
       const shlokaMatch = rawResponse.match(/\[SHLOKA_START\]([\s\S]*?)\[SHLOKA_END\]/);
       const explainMatch = rawResponse.match(/\[EXPLANATION_START\]([\s\S]*?)\[EXPLANATION_END\]/);
 
-      currentShlokaText  = (shlokaMatch ? shlokaMatch[1] : '').trim().replace(/[*#_~`]/g, '');
-      currentExplanation = (explainMatch ? explainMatch[1] : rawResponse).trim().replace(/[*#_~`]/g, '');
+      currentShlokaText  = cleanTextOutput(shlokaMatch ? shlokaMatch[1] : '');
+      currentExplanation = cleanTextOutput(explainMatch ? explainMatch[1] : rawResponse);
 
       // Fallback if AI didn't use delimiters
       if (!shlokaMatch && !explainMatch) {
         const lines = rawResponse.trim().split('\n\n');
         if (lines.length >= 2) {
-          currentShlokaText  = lines.slice(0, Math.ceil(lines.length / 3)).join('\n\n').replace(/[*#_~`]/g, '').trim();
-          currentExplanation = lines.slice(Math.ceil(lines.length / 3)).join('\n\n').replace(/[*#_~`]/g, '').trim();
+          currentShlokaText  = cleanTextOutput(lines.slice(0, Math.ceil(lines.length / 3)).join('\n\n'));
+          currentExplanation = cleanTextOutput(lines.slice(Math.ceil(lines.length / 3)).join('\n\n'));
         } else {
-          currentShlokaText  = textContent || '';
-          currentExplanation = rawResponse.replace(/[*#_~`]/g, '').trim();
+          currentShlokaText  = cleanTextOutput(textContent || '');
+          currentExplanation = cleanTextOutput(rawResponse);
         }
       }
 
@@ -1342,10 +1338,25 @@ End this section with: [EXPLANATION_END]`;
     return sel.options[sel.selectedIndex].dataset.lang || 'en-IN';
   }
 
+  function cleanTextOutput(str) {
+    if (!str) return '';
+    return str
+      // Remove all divider lines (═══, ===, ---, ___, ~~~)
+      .replace(/[═=─\-_~]{2,}/g, '')
+      // Remove lines or prefixes consisting solely of punctuation/symbols
+      .replace(/^[=\-—_═*#\s\.\,\:\;]+/gm, '')
+      .replace(/[=\-—_═*#\s\.\,\:\;]+$/gm, '')
+      // Remove all quotation marks & markdown
+      .replace(/["'“”‘’«»„‟`*#]/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
   function splitIntoChunks(text) {
     if (!text) return [];
-    const rawChunks = text.replace(/([.?!।॥\n]{1,3})\s*/g, '$1|SPLIT|')
-      .split('|SPLIT|').map(s => s.trim()).filter(Boolean);
+    const clean = cleanTextOutput(text);
+    const rawChunks = clean.replace(/([.?!।॥\n]{1,3})\s*/g, '$1|SPLIT|')
+      .split('|SPLIT|').map(s => cleanTextOutput(s)).filter(s => s && /[^\s=\-—_═*#]/.test(s));
     const safeChunks = [];
     for (const chunk of rawChunks) {
       if (chunk.length <= 180) {
@@ -1354,11 +1365,13 @@ End this section with: [EXPLANATION_END]`;
         const subParts = chunk.replace(/([,;:]\s*)/g, '$1|SUB|').split('|SUB|');
         let currentSub = '';
         for (const sub of subParts) {
-          if ((currentSub + ' ' + sub).trim().length <= 180) {
-            currentSub = (currentSub + ' ' + sub).trim();
+          const cleanSub = cleanTextOutput(sub);
+          if (!cleanSub) continue;
+          if ((currentSub + ' ' + cleanSub).trim().length <= 180) {
+            currentSub = (currentSub + ' ' + cleanSub).trim();
           } else {
             if (currentSub) safeChunks.push(currentSub);
-            currentSub = sub.trim();
+            currentSub = cleanSub;
           }
         }
         if (currentSub) safeChunks.push(currentSub);
